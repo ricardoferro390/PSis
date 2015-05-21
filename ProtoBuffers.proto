@@ -1,0 +1,4 @@
+message Message{
+	required int32 type = 3;
+	optional string username = 4;
+}
