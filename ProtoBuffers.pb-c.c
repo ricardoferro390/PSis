@@ -7,144 +7,50 @@
 #endif
 
 #include "ProtoBuffers.pb-c.h"
-void   pre_buff__init
-                     (PreBuff         *message)
+void   message__init
+                     (Message         *message)
 {
-  static PreBuff init_value = PRE_BUFF__INIT;
+  static Message init_value = MESSAGE__INIT;
   *message = init_value;
 }
-size_t pre_buff__get_packed_size
-                     (const PreBuff *message)
+size_t message__get_packed_size
+                     (const Message *message)
 {
-  assert(message->base.descriptor == &pre_buff__descriptor);
+  assert(message->base.descriptor == &message__descriptor);
   return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
 }
-size_t pre_buff__pack
-                     (const PreBuff *message,
+size_t message__pack
+                     (const Message *message,
                       uint8_t       *out)
 {
-  assert(message->base.descriptor == &pre_buff__descriptor);
+  assert(message->base.descriptor == &message__descriptor);
   return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
 }
-size_t pre_buff__pack_to_buffer
-                     (const PreBuff *message,
+size_t message__pack_to_buffer
+                     (const Message *message,
                       ProtobufCBuffer *buffer)
 {
-  assert(message->base.descriptor == &pre_buff__descriptor);
+  assert(message->base.descriptor == &message__descriptor);
   return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
 }
-PreBuff *
-       pre_buff__unpack
+Message *
+       message__unpack
                      (ProtobufCAllocator  *allocator,
                       size_t               len,
                       const uint8_t       *data)
 {
-  return (PreBuff *)
-     protobuf_c_message_unpack (&pre_buff__descriptor,
+  return (Message *)
+     protobuf_c_message_unpack (&message__descriptor,
                                 allocator, len, data);
 }
-void   pre_buff__free_unpacked
-                     (PreBuff *message,
+void   message__free_unpacked
+                     (Message *message,
                       ProtobufCAllocator *allocator)
 {
-  assert(message->base.descriptor == &pre_buff__descriptor);
+  assert(message->base.descriptor == &message__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   login_buff__init
-                     (LoginBuff         *message)
-{
-  static LoginBuff init_value = LOGIN_BUFF__INIT;
-  *message = init_value;
-}
-size_t login_buff__get_packed_size
-                     (const LoginBuff *message)
-{
-  assert(message->base.descriptor == &login_buff__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t login_buff__pack
-                     (const LoginBuff *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &login_buff__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t login_buff__pack_to_buffer
-                     (const LoginBuff *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &login_buff__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-LoginBuff *
-       login_buff__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (LoginBuff *)
-     protobuf_c_message_unpack (&login_buff__descriptor,
-                                allocator, len, data);
-}
-void   login_buff__free_unpacked
-                     (LoginBuff *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &login_buff__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
-static const ProtobufCFieldDescriptor pre_buff__field_descriptors[2] =
-{
-  {
-    "type",
-    1,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_INT32,
-    0,   /* quantifier_offset */
-    offsetof(PreBuff, type),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-  {
-    "size",
-    2,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_INT32,
-    0,   /* quantifier_offset */
-    offsetof(PreBuff, size),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned pre_buff__field_indices_by_name[] = {
-  1,   /* field[1] = size */
-  0,   /* field[0] = type */
-};
-static const ProtobufCIntRange pre_buff__number_ranges[1 + 1] =
-{
-  { 1, 0 },
-  { 0, 2 }
-};
-const ProtobufCMessageDescriptor pre_buff__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "PreBuff",
-  "PreBuff",
-  "PreBuff",
-  "",
-  sizeof(PreBuff),
-  2,
-  pre_buff__field_descriptors,
-  pre_buff__field_indices_by_name,
-  1,  pre_buff__number_ranges,
-  (ProtobufCMessageInit) pre_buff__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor login_buff__field_descriptors[2] =
+static const ProtobufCFieldDescriptor message__field_descriptors[2] =
 {
   {
     "type",
@@ -152,7 +58,7 @@ static const ProtobufCFieldDescriptor login_buff__field_descriptors[2] =
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
-    offsetof(LoginBuff, type),
+    offsetof(Message, type),
     NULL,
     NULL,
     0,             /* flags */
@@ -161,37 +67,37 @@ static const ProtobufCFieldDescriptor login_buff__field_descriptors[2] =
   {
     "username",
     4,
-    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
-    offsetof(LoginBuff, username),
+    offsetof(Message, username),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
-static const unsigned login_buff__field_indices_by_name[] = {
+static const unsigned message__field_indices_by_name[] = {
   0,   /* field[0] = type */
   1,   /* field[1] = username */
 };
-static const ProtobufCIntRange login_buff__number_ranges[1 + 1] =
+static const ProtobufCIntRange message__number_ranges[1 + 1] =
 {
   { 3, 0 },
   { 0, 2 }
 };
-const ProtobufCMessageDescriptor login_buff__descriptor =
+const ProtobufCMessageDescriptor message__descriptor =
 {
   PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "LoginBuff",
-  "LoginBuff",
-  "LoginBuff",
+  "Message",
+  "Message",
+  "Message",
   "",
-  sizeof(LoginBuff),
+  sizeof(Message),
   2,
-  login_buff__field_descriptors,
-  login_buff__field_indices_by_name,
-  1,  login_buff__number_ranges,
-  (ProtobufCMessageInit) login_buff__init,
+  message__field_descriptors,
+  message__field_indices_by_name,
+  1,  message__number_ranges,
+  (ProtobufCMessageInit) message__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
