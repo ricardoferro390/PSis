@@ -46,7 +46,7 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3001);
+	server_addr.sin_port = htons(3000);
 	inet_aton("127.0.0.1", & server_addr.sin_addr);
 	
 	// connect

@@ -42,7 +42,7 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3001);
+	server_addr.sin_port = htons(3000);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 	// bind
@@ -67,11 +67,13 @@ int main(){
 		switch (msgRcv->type) {
 		case 0:
 			printf("Login Request\n");
-			
-			msgSent.type = OK_ID;
-			bufferS = malloc(message__get_packed_size(&msgSent));
-			send(new_sock, bufferS, message__get_packed_size(&msgSent), 0);
 			// código para login
+			msgSent.type = OK_ID;
+			//msg.has_username = 1;
+			bufferS = malloc(message__get_packed_size(&msgSent));
+			message__pack(&msgSent, bufferS);
+			send(new_sock, bufferS, message__get_packed_size(&msgSent), 0);
+		
 		
 		case DISC_ID:
 			// código para disconnect
