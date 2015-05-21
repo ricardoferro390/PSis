@@ -1,10 +1,6 @@
-/*login_list.c
- */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "login_list.h"
+
 
 list * create_list(){	
 	list *begin;
@@ -15,13 +11,12 @@ list * create_list(){
 		//exit(1);
 	}
 	begin->next=NULL;	//proximo elemento aponto para NULL(fim da lista)
-	
 	return begin;		//retorna ponteiro para inicio da lista
 }
 
 bool search_element(list* begin, char* username){
 	while(begin->next!=NULL){
-		if(strncmp(begin->username,username,20)==0){
+		if(strncmp(begin->username,username,MAX_USERNAME_SIZE)==0){
 			return true;	//elemento ja existente na lista
 		}	
 		begin=begin->next;
@@ -31,7 +26,11 @@ bool search_element(list* begin, char* username){
 
 bool add_element(list *begin, char *username){
 	list * new;	 //create new pointer to list
-
+	
+	if(strlen(username)>=MAX_USERNAME_SIZE){
+		printf("Grande demais!");
+		return false;
+	}
 	if(search_element(begin, username)){
 		//elemento ja esta na lista
 		printf("Elemento ja se encontra na lista\n");
@@ -49,7 +48,7 @@ bool add_element(list *begin, char *username){
 			}
 			begin->next=new;		
 			new->next=NULL;
-			strncpy(new->username,username,20);
+			strncpy(new->username,username,MAX_USERNAME_SIZE);
 			
 			return true;	//elemento correctamente adicionado
 		}
@@ -78,7 +77,7 @@ list* remove_element(list* begin, char* username){
 
 	//verificar elementos no meio da lista (excepto o ultimo)
 	while(aux->next!=NULL){
-		if(strncmp(aux->username,username,20)==0){
+		if(strncmp(aux->username,username,MAX_USERNAME_SIZE)==0){
 			ant->next=aux->next;
 			free(aux);
 			return begin;
@@ -89,7 +88,7 @@ list* remove_element(list* begin, char* username){
 	}
 	
 	//verificar se e o ultimo elemento da lista
-	if(strncmp(aux->username,username,20)==0){
+	if(strncmp(aux->username,username,MAX_USERNAME_SIZE)==0){
 		ant->next=aux->next;
 		free(aux);
 		return begin;
@@ -135,7 +134,7 @@ void print_list(list* begin){
 	
 
 
-int main(int argc, char **argv)
+/*int main(int argc, char **argv)
 {
 	
 	list* begin;
@@ -163,5 +162,5 @@ int main(int argc, char **argv)
 	
 	
 	return 0;
-}
+}*/
 

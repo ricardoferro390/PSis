@@ -1,9 +1,15 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 
 typedef enum { false, true } bool;
 typedef struct _list list;
 
+#define MAX_USERNAME_SIZE 40
+
 struct _list {
-	char username[21];
+	char username[MAX_USERNAME_SIZE];
 	list * next;
 };
 

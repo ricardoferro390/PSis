@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include "ProtoBuffers.pb-c.h"
+#include "login_list.h"
 
 #define LOGIN_STR "LOGIN"// username 
 #define DISC_STR "DISC"
@@ -30,6 +31,7 @@ int main(){
 	char cmd_str_arg[100];
 	Message * msgRcv;
 	Message msgSent = MESSAGE__INIT;
+	list * client_list;
 	
 	struct sockaddr_in server_addr, client_addr;
 	
@@ -42,12 +44,15 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3000);
+	server_addr.sin_port = htons(3001);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 	// bind
 	bind(sock_fd, (struct sockaddr*)&server_addr, sizeof(server_addr));
 	perror("bind");
+	
+	// criação lista de clientes
+	client_list = create_list();
 	
 	// listen
 	if(listen(sock_fd, 10) == -1){
@@ -64,16 +69,23 @@ int main(){
 	msgRcv = message__unpack(NULL, len, bufferR);
 	printf("Received message:\n\tType %d\n\tData %s\n", msgRcv->type, msgRcv->username);
 	
+	
 		switch (msgRcv->type) {
 		case 0:
-			printf("Login Request\n");
-			// código para login
-			msgSent.type = OK_ID;
+			if(!add_element(client_list, msgRcv->username)) {
+				printf("Failed adding username\n");
+				msgSent.type = INVALID_ID;
+			}
+			else{
+				printf("Login Request\n");
+				// código para login
+				msgSent.type = OK_ID;
+			}
 			//msg.has_username = 1;
 			bufferS = malloc(message__get_packed_size(&msgSent));
 			message__pack(&msgSent, bufferS);
 			send(new_sock, bufferS, message__get_packed_size(&msgSent), 0);
-		
+			
 		
 		case DISC_ID:
 			// código para disconnect

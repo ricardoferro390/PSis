@@ -46,7 +46,7 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3000);
+	server_addr.sin_port = htons(3001);
 	inet_aton("127.0.0.1", & server_addr.sin_addr);
 	
 	// connect
@@ -76,6 +76,7 @@ int main(){
 					size_t len = read(sock_fd, bufferR, MAX_SIZE);
 					msgRcv = message__unpack(NULL, len, bufferR);
 					if(msgRcv->type==OK_ID) printf("Received OK\n");
+					if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
 					should_exit = 1;
 				}
 				
