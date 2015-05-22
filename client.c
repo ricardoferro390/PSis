@@ -8,7 +8,7 @@ int main(){
 	int cmd_int_arg1, cmd_int_arg2;
 	int sock_fd;
 	
-	Message msgSent = MESSAGE__INIT;
+	Message msgSent;
 	Message * msgRcv;
 	char *bufferS;
 	char bufferR[MAX_SIZE];
@@ -36,7 +36,7 @@ int main(){
 	
 	should_exit= 0;
 
-	while(! should_exit){
+	while(!should_exit){
 			
 		fgets(line, 200, stdin);
 		if(sscanf(line, "%s", command) == 1){
@@ -44,28 +44,32 @@ int main(){
 				
 				if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
 					msgSent = create_message(LOGIN_ID, cmd_str_arg);
-					/*msgSent.type = LOGIN_ID;
-					msgSent.username = strdup(cmd_str_arg);*/
-					
+										
 					send_message(sock_fd, msgSent);
 					
 					printf("Sending LOGIN command (%s)\n", cmd_str_arg);
 					
 					// receber resposta OK
 					msgRcv = receive_message(sock_fd);
-					if(msgRcv->type==OK_ID) printf("Received OK\n");
+					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
 					if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
-					should_exit = 1;
 				}
 				
 				else{
 					printf("Invalid LOGIN command\n");
 				}
 			}else if(strcmp(command, DISC_STR)==0){
-					send(sock_fd, command, strlen(command) +1, 0);
+					msgSent = create_message(DISC_ID, NULL);
+					send_message(sock_fd, msgSent);
 					printf("Sending DISconnnect command\n");
-					close(sock_fd);
-					printf("Connection closed");
+					msgRcv = receive_message(sock_fd);
+					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
+					if(msgRcv->type==OK_ID){
+						close(sock_fd);
+						printf("Connection closed");
+						should_exit = 1;
+					}
+					
 										
 					
 					
@@ -104,6 +108,6 @@ int main(){
 	
 	
 	
-	
+	printf("Client terminated");
 	exit(0);
 }

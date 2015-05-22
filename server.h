@@ -22,4 +22,6 @@
 #define OK_ID 4
 #define INVALID_ID 5
 
+void * client_thread_code(void *arg);
+
 

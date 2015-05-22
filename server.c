@@ -1,27 +1,41 @@
 #include "message.h"
-#include <pthread.h>
 
 user * client_list;
 
-
-
 void * client_thread_code(void *arg){
-	user * client = arg;
-	bool exit_flag = 0;
-	Message msgSent = MESSAGE__INIT;
+	user * client = (user*)arg;
+	
+	printf("client socket = %d", client->sock);
+	
+	int exit_flag = 0;
+	Message msgSent;
 	Message * msgRcv;
 	char *bufferS;
 	char bufferR[MAX_SIZE];
 	
 	while(!exit_flag){
 		msgRcv = receive_message(client->sock);
-		
+		printf("mensagem recebida\n");
 		switch(msgRcv->type){
 			case LOGIN_ID:
-				// login
+				/*if(!add_element(client_list, client, msgRcv->username)) {
+				printf("Failed adding username\n");
+				msgSent = create_message(INVALID_ID, NULL);
+				}
+				else{*/
+				printf("Login Request (%s)\n", msgRcv->username);
+				msgSent = create_message(OK_ID, NULL);
+				//}
+				send_message(client->sock, msgSent);
+				printf("OK enviado\n");
 				break;
 			case DISC_ID:
-				// código para disconnect
+				printf("Disconnect Request\n");
+				msgSent = create_message(DISC_ID, NULL);
+				send_message(client->sock, msgSent);
+				printf("OK enviado\n");
+				close(client->sock);
+				exit_flag = 1;
 				break;
 			case CHAT_ID:
 				// código para chat
@@ -31,17 +45,13 @@ void * client_thread_code(void *arg){
 			default:
 				break;
 			}
-	
-	
-	
 	}
+	printf("thread fechada");
+	pthread_exit(NULL);
 }
 
-
-
-
 int main(){
-
+	int exit_flag=0;
 	int sock_fd, new_sock;
 	char bufferR[MAX_SIZE];
 	char *bufferS;
@@ -49,8 +59,7 @@ int main(){
 	char cmd_str_arg[100];
 	Message * msgRcv;
 	Message msgSent = MESSAGE__INIT;
-
-	
+	user * new_user;
 	struct sockaddr_in server_addr, client_addr;
 	
 	// criação do socket
@@ -78,50 +87,17 @@ int main(){
 		exit(-1);
 	}
 	perror("listen ");
-
-	// accept
-	new_sock = accept(sock_fd, NULL, NULL);
-	perror("accept");
-
 	
-	msgRcv = receive_message(new_sock);
-	printf("Received message:\n\tType %d\n\tData %s\n", msgRcv->type, msgRcv->username);
-	
-	
-		switch (msgRcv->type) {
-		case 0:
-			if(!add_element(client_list, msgRcv->username)) {
-				printf("Failed adding username\n");
-				msgSent.type = INVALID_ID;
-			}
-			else{
-				printf("Login Request\n");
-				// código para login
-				//msgSent.type = OK_ID;
-				msgSent = create_message(OK_ID, NULL);
-			}
-			//msg.has_username = 1;
-			send_message(new_sock, msgSent);
-			
+	while(!exit_flag){
+		// accept
+		new_sock = accept(sock_fd, NULL, NULL);
+		perror("accept");
+		new_user = create_user(new_sock);
+		printf("criei novo utilizador %d\n", new_user->sock);
+		pthread_create(&new_user->thread_id, NULL, client_thread_code, new_user);
+		printf("NOVO utilizador ligado! thread criada\n");
 		
-		case DISC_ID:
-			// código para disconnect
-
-		case CHAT_ID:
-			// código para chat
-
-		case QUERY_ID:
-			// código para query
-		default:
-			break;
-		}
-		
-		
-		
-		
-		
-		
-	
+	}	
 
 	exit(0);
 

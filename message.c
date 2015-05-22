@@ -28,11 +28,13 @@ Message create_message(int type, char* string){
 			msg.username = strdup(string);
 			break;
 		case DISC_ID:
+			msg.type = DISC_ID;
 			break;
-		
 		case CHAT_ID:
+			msg.type = CHAT_ID;
 			break;
 		case QUERY_ID:
+			msg.type = QUERY_ID;
 			break;
 		case OK_ID:
 			msg.type = OK_ID;

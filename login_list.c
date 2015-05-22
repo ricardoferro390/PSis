@@ -3,14 +3,13 @@
 
 
 user * create_list(){	
-	user *begin;
-			
-	begin = malloc(sizeof(user));
+	user *begin = malloc(sizeof(user));
 	if (begin == NULL){ 
 		printf("Nao foi possivel criar lista\n"); 
 		//exit(1);
 	}
-	begin->next=NULL;	//proximo elemento aponto para NULL(fim da lista)
+	begin->username = NULL;
+	begin->next = NULL;	//proximo elemento aponto para NULL(fim da lista)
 	return begin;		//retorna ponteiro para inicio da lista
 }
 
@@ -24,35 +23,30 @@ bool search_element(user* begin, char* username){
 	return false;	//elemento nao encontrado
 }
 
-bool add_element(user *begin, char *username){
-	user * new;	 //create new pointer to list
+int add_element(user *begin, user * new_user, char * username){
+	//user * new;	 //create new pointer to list
 	
 	if(strlen(username)>=MAX_USERNAME_SIZE){
 		printf("Grande demais!");
-		return false;
+		return 1;
 	}
-	if(search_element(begin, username)){
+	/*if(search_element(begin, username)){
 		//elemento ja esta na lista
 		printf("Elemento ja se encontra na lista\n");
 		return false; //nao foi possivel adicionar elemento na lista
-	}else{
+	}else{*/
 		//elemento nao esta na lista, adicionar
-		new = malloc(sizeof(user));
-		if(new==NULL){
-			printf("Nao foi possivel criar elemento!");
-			return false;
-		}else{
 			//adiciona elemento ao final da lista
-			while(begin->next!=NULL){		
-				begin=begin->next;
-			}
-			begin->next=new;		
-			new->next=NULL;
-			strncpy(new->username,username,MAX_USERNAME_SIZE);
-			
-			return true;	//elemento correctamente adicionado
+		while(begin->next!=NULL){		
+			begin=begin->next;
 		}
-	}
+		strncpy(new_user->username, username, MAX_USERNAME_SIZE);
+		begin->next = new_user;		
+		new_user->next = NULL;
+		
+			
+		return 0;	//elemento correctamente adicionado
+	//}
 }
 
 user* remove_element(user* begin, char* username){
@@ -130,6 +124,16 @@ void print_list(user* begin){
 	}
 
 	return;
+}
+
+user * create_user(int sock){
+
+	user * new_user = (user*)malloc(sizeof(user));
+	new_user->username = NULL;
+	new_user->next = NULL;
+	new_user->sock = sock;
+	return new_user;
+
 }
 	
 

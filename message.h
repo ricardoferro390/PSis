@@ -6,6 +6,7 @@
 #include <sys/un.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "ProtoBuffers.pb-c.h"
 #include "login_list.h"
 
@@ -22,7 +23,6 @@
 #define QUERY_ID 3
 #define OK_ID 4
 #define INVALID_ID 5
-
 
 void send_message(int sock, Message msg);
 Message * receive_message(int sock);
