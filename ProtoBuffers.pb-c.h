@@ -28,10 +28,11 @@ struct  _Message
   ProtobufCMessage base;
   int32_t type;
   char *username;
+  char *chat;
 };
 #define MESSAGE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&message__descriptor) \
-    , 0, NULL }
+    , 0, NULL, NULL }
 
 
 /* Message methods */

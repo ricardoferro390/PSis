@@ -45,11 +45,8 @@ int main(){
 				if(!login_made){	
 					if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
 						msgSent = create_message(LOGIN_ID, cmd_str_arg);
-											
 						send_message(sock_fd, msgSent);
-						
 						printf("Sending LOGIN command (%s)\n", cmd_str_arg);
-						
 						// receber resposta OK
 						msgRcv = receive_message(sock_fd);
 						if(msgRcv->type==OK_ID){
@@ -81,10 +78,15 @@ int main(){
 			////////// CHAT /////////			
 			}else if(strcmp(command, CHAT_STR)==0){
 				if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
-				
+					if(login_made){	
+						msgSent = create_message(CHAT_ID, cmd_str_arg);				
+						send_message(sock_fd, msgSent);
 						printf("Sending CHAT command (%s)\n", cmd_str_arg);
-				
-				
+						msgRcv = receive_message(sock_fd);
+						if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
+						if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
+					}
+					else printf("Please LOGIN first\n");
 				}
 				else{
 					printf("Invalid CHAT command\n");
@@ -116,6 +118,6 @@ int main(){
 	
 	
 	close(sock_fd);
-	printf("Client terminated");
+	printf("Client terminated\n");
 	exit(0);
 }

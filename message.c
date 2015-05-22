@@ -14,6 +14,7 @@ Message * receive_message(int sock){
 	Message * msg;
 	
 	size_t len = read(sock, buffer, MAX_SIZE);
+	if(len==0) return NULL;
 	msg = message__unpack(NULL, len, buffer);
 	
 	return msg;
@@ -32,6 +33,7 @@ Message create_message(int type, char* string){
 			break;
 		case CHAT_ID:
 			msg.type = CHAT_ID;
+			msg.chat = strdup(string);
 			break;
 		case QUERY_ID:
 			msg.type = QUERY_ID;

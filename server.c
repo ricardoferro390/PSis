@@ -1,10 +1,7 @@
 #include "server.h"
 
 void * client_thread_code(void *arg){
-	user * client = (user*)arg;
-	
-	printf("client socket = %d", client->sock);
-	
+	user * client = (user*)arg;	
 	int exit_flag = 0;
 	Message msgSent;
 	Message * msgRcv;
@@ -13,8 +10,11 @@ void * client_thread_code(void *arg){
 	
 	while(!exit_flag){
 		msgRcv = receive_message(client->sock);
+		if(msgRcv==NULL) break;
 		printf("mensagem recebida\n");
 		switch(msgRcv->type){
+			
+			///// LOGIN /////
 			case LOGIN_ID:
 				client->username = malloc(MAX_USERNAME_SIZE*sizeof(char));
 				strcpy(client->username, msgRcv->username);
@@ -29,24 +29,36 @@ void * client_thread_code(void *arg){
 				send_message(client->sock, msgSent);
 				printf("OK enviado\n");
 				break;
+				
+			///// DISC /////
 			case DISC_ID:
 				printf("Disconnect Request\n");
-				msgSent = create_message(DISC_ID, NULL);
+				msgSent = create_message(OK_ID, NULL);
 				send_message(client->sock, msgSent);
 				printf("OK enviado\n");
-				close(client->sock);
 				exit_flag = 1;
 				break;
+				
+			///// CHAT /////
 			case CHAT_ID:
-				// código para chat
+				printf("Chat received: %s\n", msgRcv->chat);
+				msgSent = create_message(OK_ID, NULL);
+				send_message(client->sock, msgSent);
+				printf("OK enviado\n");
 				break;
+				
+				
 			case QUERY_ID:
 				// código para query
 			default:
 				break;
 			}
 	}
-	printf("thread fechada");
+	
+	remove_element(client);
+	fflush(stdout);
+	close(client->sock);
+	printf("Thread fechada\n");
 	pthread_exit(NULL);
 }
 
@@ -93,10 +105,8 @@ int main(){
 		new_sock = accept(sock_fd, NULL, NULL);
 		perror("accept");
 		new_user = create_user(new_sock);
-		printf("criei novo utilizador %d\n", new_user->sock);
 		pthread_create(&new_user->thread_id, NULL, client_thread_code, new_user);
-		printf("NOVO utilizador ligado! thread criada\n");
-		
+		printf("Novo utilizador aceite! Nova thread criada\n");
 	}	
 
 	exit(0);

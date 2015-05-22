@@ -31,19 +31,14 @@ int add_element(user * new_user){
 		printf("Grande demais!");
 		return 1;
 	}
-	printf("Cheguei ao 1\n");
-	
 	
 	if(aux->next==NULL){
 		aux->next = new_user;
 		return 0;
 	}
 	else{
-		printf("Cheguei ao 4\n");
 		aux = aux->next;
 		do{
-			printf("Cheguei ao 5\n");	
-			printf("lista->username=%s\nnew_user->username=%s\n", aux->username, new_user->username);
 			if(strcmp(aux->username, new_user->username)==0){
 				printf("username já utilizado!\n");
 				return 1;
@@ -54,53 +49,29 @@ int add_element(user * new_user){
 			}
 			aux = aux->next;
 		}while(aux!=NULL);	
-		
-		printf("Cheguei ao 7\n");
 		return 0;	//elemento correctamente adicionado
 	}
 }
 
-user* remove_element(user* begin, char* username){
+int remove_element(user * client){
+	user * aux = client_list;
+	user * aux_to_remove;
 	
-	user * aux;
-	user * ant;
-		
-	aux=begin->next;
-	ant=begin->next;
-	
-	if(aux==NULL){
-		//lista sem elementos
-		return begin;
+	if(aux->next==NULL){
+		return 1;
 	}
 	
-	//verificar se e o primeiro elemento da lista
-	if(strncmp(aux->username,username,20)==0){				
-		begin->next=aux->next;
-		free(aux);	
-		return begin;
-	}
-
-	//verificar elementos no meio da lista (excepto o ultimo)
 	while(aux->next!=NULL){
-		if(strncmp(aux->username,username,MAX_USERNAME_SIZE)==0){
-			ant->next=aux->next;
-			free(aux);
-			return begin;
-		}else{
-			ant=aux;
-			aux=aux->next;
-		}	
+		if(strcmp(aux->next->username, client->username )==0){
+			aux_to_remove = aux->next;
+			aux->next=aux->next->next;
+			printf("Utilizador %s encontrado...\n", client->username);
+			free(aux_to_remove);
+			printf("...e removido!\n");
+			return 0;
+		}
+		aux = aux->next;
 	}
-	
-	//verificar se e o ultimo elemento da lista
-	if(strncmp(aux->username,username,MAX_USERNAME_SIZE)==0){
-		ant->next=aux->next;
-		free(aux);
-		return begin;
-	}
-	
-	//elemento nao foi encontrado
-	return begin;
 }
 
 void delete_list(user *begin){

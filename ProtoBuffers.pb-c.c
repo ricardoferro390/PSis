@@ -50,11 +50,11 @@ void   message__free_unpacked
   assert(message->base.descriptor == &message__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor message__field_descriptors[2] =
+static const ProtobufCFieldDescriptor message__field_descriptors[3] =
 {
   {
     "type",
-    3,
+    1,
     PROTOBUF_C_LABEL_REQUIRED,
     PROTOBUF_C_TYPE_INT32,
     0,   /* quantifier_offset */
@@ -66,7 +66,7 @@ static const ProtobufCFieldDescriptor message__field_descriptors[2] =
   },
   {
     "username",
-    4,
+    2,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_STRING,
     0,   /* quantifier_offset */
@@ -76,15 +76,28 @@ static const ProtobufCFieldDescriptor message__field_descriptors[2] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "chat",
+    3,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Message, chat),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned message__field_indices_by_name[] = {
+  2,   /* field[2] = chat */
   0,   /* field[0] = type */
   1,   /* field[1] = username */
 };
 static const ProtobufCIntRange message__number_ranges[1 + 1] =
 {
-  { 3, 0 },
-  { 0, 2 }
+  { 1, 0 },
+  { 0, 3 }
 };
 const ProtobufCMessageDescriptor message__descriptor =
 {
@@ -94,7 +107,7 @@ const ProtobufCMessageDescriptor message__descriptor =
   "Message",
   "",
   sizeof(Message),
-  2,
+  3,
   message__field_descriptors,
   message__field_indices_by_name,
   1,  message__number_ranges,
