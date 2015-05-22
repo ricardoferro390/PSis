@@ -1,26 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include "ProtoBuffers.pb-c.h"
+#include "message.h"
 
-#define LOGIN_STR "LOGIN"// username 
-#define DISC_STR "DISC"
-#define CHAT_STR "CHAT"// string
-#define QUERY_STR "QUERY"// id_min id_max – request o
-#define MAX_SIZE 1024
-
-#define LOGIN_ID 0
-#define DISC_ID 1
-#define CHAT_ID 2
-#define QUERY_ID 3
-#define OK_ID 4
-#define INVALID_ID 5
- 
 int main(){
 	int should_exit;
 	char line[100];
@@ -46,7 +25,7 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3001);
+	server_addr.sin_port = htons(PORT);
 	inet_aton("127.0.0.1", & server_addr.sin_addr);
 	
 	// connect
@@ -64,17 +43,16 @@ int main(){
 			if(strcmp(command, LOGIN_STR) == 0){
 				
 				if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
-					msgSent.type = LOGIN_ID;
-					msgSent.username = strdup(cmd_str_arg);
-					//msg.has_username = 1;
-					bufferS = malloc(message__get_packed_size(&msgSent));
-					message__pack(&msgSent, bufferS);
-					send(sock_fd, bufferS, message__get_packed_size(&msgSent), 0);
+					msgSent = create_message(LOGIN_ID, cmd_str_arg);
+					/*msgSent.type = LOGIN_ID;
+					msgSent.username = strdup(cmd_str_arg);*/
+					
+					send_message(sock_fd, msgSent);
+					
 					printf("Sending LOGIN command (%s)\n", cmd_str_arg);
 					
 					// receber resposta OK
-					size_t len = read(sock_fd, bufferR, MAX_SIZE);
-					msgRcv = message__unpack(NULL, len, bufferR);
+					msgRcv = receive_message(sock_fd);
 					if(msgRcv->type==OK_ID) printf("Received OK\n");
 					if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
 					should_exit = 1;

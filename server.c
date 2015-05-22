@@ -1,26 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include "ProtoBuffers.pb-c.h"
-#include "login_list.h"
+#include "message.h"
+#include <pthread.h>
 
-#define LOGIN_STR "LOGIN"// username 
-#define DISC_STR "DISC"
-#define CHAT_STR "CHAT"// string
-#define QUERY_STR "QUERY"// id_min id_max – request o
-#define MAX_SIZE 1024
+user * client_list;
 
-#define LOGIN_ID 0
-#define DISC_ID 1
-#define CHAT_ID 2
-#define QUERY_ID 3
-#define OK_ID 4
-#define INVALID_ID 5
+
+
+void * client_thread_code(void *arg){
+	user * client = arg;
+	bool exit_flag = 0;
+	Message msgSent = MESSAGE__INIT;
+	Message * msgRcv;
+	char *bufferS;
+	char bufferR[MAX_SIZE];
+	
+	while(!exit_flag){
+		msgRcv = receive_message(client->sock);
+		
+		switch(msgRcv->type){
+			case LOGIN_ID:
+				// login
+				break;
+			case DISC_ID:
+				// código para disconnect
+				break;
+			case CHAT_ID:
+				// código para chat
+				break;
+			case QUERY_ID:
+				// código para query
+			default:
+				break;
+			}
+	
+	
+	
+	}
+}
+
+
+
 
 int main(){
 
@@ -31,7 +49,7 @@ int main(){
 	char cmd_str_arg[100];
 	Message * msgRcv;
 	Message msgSent = MESSAGE__INIT;
-	list * client_list;
+
 	
 	struct sockaddr_in server_addr, client_addr;
 	
@@ -44,7 +62,7 @@ int main(){
 	
 	// dados do servidor
 	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(3001);
+	server_addr.sin_port = htons(PORT);
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 	// bind
@@ -65,8 +83,8 @@ int main(){
 	new_sock = accept(sock_fd, NULL, NULL);
 	perror("accept");
 
-	size_t len = read(new_sock, bufferR, MAX_SIZE);
-	msgRcv = message__unpack(NULL, len, bufferR);
+	
+	msgRcv = receive_message(new_sock);
 	printf("Received message:\n\tType %d\n\tData %s\n", msgRcv->type, msgRcv->username);
 	
 	
@@ -79,12 +97,11 @@ int main(){
 			else{
 				printf("Login Request\n");
 				// código para login
-				msgSent.type = OK_ID;
+				//msgSent.type = OK_ID;
+				msgSent = create_message(OK_ID, NULL);
 			}
 			//msg.has_username = 1;
-			bufferS = malloc(message__get_packed_size(&msgSent));
-			message__pack(&msgSent, bufferS);
-			send(new_sock, bufferS, message__get_packed_size(&msgSent), 0);
+			send_message(new_sock, msgSent);
 			
 		
 		case DISC_ID:

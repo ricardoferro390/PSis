@@ -2,10 +2,10 @@
 #include "login_list.h"
 
 
-list * create_list(){	
-	list *begin;
+user * create_list(){	
+	user *begin;
 			
-	begin = malloc(sizeof(list));
+	begin = malloc(sizeof(user));
 	if (begin == NULL){ 
 		printf("Nao foi possivel criar lista\n"); 
 		//exit(1);
@@ -14,7 +14,7 @@ list * create_list(){
 	return begin;		//retorna ponteiro para inicio da lista
 }
 
-bool search_element(list* begin, char* username){
+bool search_element(user* begin, char* username){
 	while(begin->next!=NULL){
 		if(strncmp(begin->username,username,MAX_USERNAME_SIZE)==0){
 			return true;	//elemento ja existente na lista
@@ -24,8 +24,8 @@ bool search_element(list* begin, char* username){
 	return false;	//elemento nao encontrado
 }
 
-bool add_element(list *begin, char *username){
-	list * new;	 //create new pointer to list
+bool add_element(user *begin, char *username){
+	user * new;	 //create new pointer to list
 	
 	if(strlen(username)>=MAX_USERNAME_SIZE){
 		printf("Grande demais!");
@@ -37,7 +37,7 @@ bool add_element(list *begin, char *username){
 		return false; //nao foi possivel adicionar elemento na lista
 	}else{
 		//elemento nao esta na lista, adicionar
-		new = malloc(sizeof(list));
+		new = malloc(sizeof(user));
 		if(new==NULL){
 			printf("Nao foi possivel criar elemento!");
 			return false;
@@ -55,10 +55,10 @@ bool add_element(list *begin, char *username){
 	}
 }
 
-list* remove_element(list* begin, char* username){
+user* remove_element(user* begin, char* username){
 	
-	list * aux;
-	list * ant;
+	user * aux;
+	user * ant;
 		
 	aux=begin->next;
 	ant=begin->next;
@@ -98,10 +98,10 @@ list* remove_element(list* begin, char* username){
 	return begin;
 }
 
-void delete_list(list *begin){
+void delete_list(user *begin){
 
-	list * aux;
-	list * aux2;
+	user * aux;
+	user * aux2;
 
 	//se a lista esta vazia, eliminar o ponteiro inicial
 	if(begin->next==NULL){
@@ -120,8 +120,8 @@ void delete_list(list *begin){
 	return;
 }
 
-void print_list(list* begin){
-	list * aux;
+void print_list(user* begin){
+	user * aux;
 	
 	aux=begin->next;
 	while(aux!=NULL){		
@@ -132,35 +132,4 @@ void print_list(list* begin){
 	return;
 }
 	
-
-
-/*int main(int argc, char **argv)
-{
-	
-	list* begin;
-	begin=create_list();
-	
-	char* str1 = "ferro";
-	//char* str2 = "diogo";
-	//char* str3 = "jnos";
-	//char* str4 = "cenas";
-	
-	char* str5 = "abcdefghijklmnopqrst";
-	char* str6 = "abcdefghijklmnopqrstuvx";
-	
-	printf("%d\n",strlen(str5));
-	printf("%d\n",strlen(str6));
-	
-	add_element(begin, str1);
-	//add_element(begin, str2);
-	//add_element(begin, str3);
-	//add_element(begin, str4);
-	add_element(begin, str5);
-	add_element(begin, str6);
-	
-	print_list(begin);
-	
-	
-	return 0;
-}*/
 
