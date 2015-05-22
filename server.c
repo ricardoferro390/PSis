@@ -1,6 +1,4 @@
-#include "message.h"
-
-user * client_list;
+#include "server.h"
 
 void * client_thread_code(void *arg){
 	user * client = (user*)arg;
@@ -18,14 +16,16 @@ void * client_thread_code(void *arg){
 		printf("mensagem recebida\n");
 		switch(msgRcv->type){
 			case LOGIN_ID:
-				/*if(!add_element(client_list, client, msgRcv->username)) {
+				client->username = malloc(MAX_USERNAME_SIZE*sizeof(char));
+				strcpy(client->username, msgRcv->username);
+				if(add_element(client)) {
 				printf("Failed adding username\n");
 				msgSent = create_message(INVALID_ID, NULL);
 				}
-				else{*/
+				else{
 				printf("Login Request (%s)\n", msgRcv->username);
 				msgSent = create_message(OK_ID, NULL);
-				//}
+				}
 				send_message(client->sock, msgSent);
 				printf("OK enviado\n");
 				break;
@@ -79,7 +79,7 @@ int main(){
 	perror("bind");
 	
 	// criação lista de clientes
-	client_list = create_list();
+	create_list();
 	
 	// listen
 	if(listen(sock_fd, 10) == -1){

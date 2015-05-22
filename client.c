@@ -1,7 +1,8 @@
 #include "message.h"
 
 int main(){
-	int should_exit;
+	int should_exit = 0;
+	int login_made = 0;
 	char line[100];
 	char command[100];
 	char cmd_str_arg[100];
@@ -33,31 +34,38 @@ int main(){
 		perror("connect ");
 		exit(-1);
 	}
-	
-	should_exit= 0;
 
 	while(!should_exit){
 			
 		fgets(line, 200, stdin);
 		if(sscanf(line, "%s", command) == 1){
+			
+			////////// LOGIN /////////
 			if(strcmp(command, LOGIN_STR) == 0){
-				
-				if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
-					msgSent = create_message(LOGIN_ID, cmd_str_arg);
-										
-					send_message(sock_fd, msgSent);
+				if(!login_made){	
+					if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
+						msgSent = create_message(LOGIN_ID, cmd_str_arg);
+											
+						send_message(sock_fd, msgSent);
+						
+						printf("Sending LOGIN command (%s)\n", cmd_str_arg);
+						
+						// receber resposta OK
+						msgRcv = receive_message(sock_fd);
+						if(msgRcv->type==OK_ID){
+							printf("Received OK %d\n", msgRcv->type);
+							login_made = 1;
+						}
+						if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
+					}
 					
-					printf("Sending LOGIN command (%s)\n", cmd_str_arg);
-					
-					// receber resposta OK
-					msgRcv = receive_message(sock_fd);
-					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
-					if(msgRcv->type==INVALID_ID) printf("Invalid Login\n");
-				}
-				
-				else{
-					printf("Invalid LOGIN command\n");
-				}
+					else{
+						printf("Invalid LOGIN command\n");
+					}
+				}else printf("Login already made!\n");
+			
+			
+			////////// DISC /////////	
 			}else if(strcmp(command, DISC_STR)==0){
 					msgSent = create_message(DISC_ID, NULL);
 					send_message(sock_fd, msgSent);
@@ -65,14 +73,12 @@ int main(){
 					msgRcv = receive_message(sock_fd);
 					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
 					if(msgRcv->type==OK_ID){
-						close(sock_fd);
-						printf("Connection closed");
 						should_exit = 1;
 					}
-					
-										
-					
-					
+						
+											
+						
+			////////// CHAT /////////			
 			}else if(strcmp(command, CHAT_STR)==0){
 				if(sscanf(line, "%*s %s", cmd_str_arg) == 1){
 				
@@ -83,6 +89,8 @@ int main(){
 				else{
 					printf("Invalid CHAT command\n");
 				}
+				
+			////////// QUERY /////////
 			}else if(strcmp(command, QUERY_STR)==0){
 				if(sscanf(line, "%*s %d %d", &cmd_int_arg1, &cmd_int_arg2) == 2){
 				
@@ -107,7 +115,7 @@ int main(){
 	}
 	
 	
-	
+	close(sock_fd);
 	printf("Client terminated");
 	exit(0);
 }

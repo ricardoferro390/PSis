@@ -1,52 +1,63 @@
 
 #include "login_list.h"
 
+user * client_list;
 
-user * create_list(){	
-	user *begin = malloc(sizeof(user));
-	if (begin == NULL){ 
+void create_list(){	
+	client_list = malloc(sizeof(user));
+	if (client_list == NULL){ 
 		printf("Nao foi possivel criar lista\n"); 
 		//exit(1);
 	}
-	begin->username = NULL;
-	begin->next = NULL;	//proximo elemento aponto para NULL(fim da lista)
-	return begin;		//retorna ponteiro para inicio da lista
+	client_list->username = NULL;
+	client_list->next = NULL;	//proximo elemento aponto para NULL(fim da lista)
 }
 
-bool search_element(user* begin, char* username){
-	while(begin->next!=NULL){
-		if(strncmp(begin->username,username,MAX_USERNAME_SIZE)==0){
-			return true;	//elemento ja existente na lista
-		}	
-		begin=begin->next;
-	}
-	return false;	//elemento nao encontrado
-}
-
-int add_element(user *begin, user * new_user, char * username){
-	//user * new;	 //create new pointer to list
+int search_element(user* begin, char* username){
+	printf("cheguei aqui!");
 	
-	if(strlen(username)>=MAX_USERNAME_SIZE){
+	if(strcmp(begin->username,username)==0) return 1;
+	while(begin->next!=NULL){
+		if(strcmp(begin->username,username)==0)	return 1;	//elemento ja existente na lista
+		begin = begin->next;
+	}
+	return 0;	//elemento nao encontrado
+}
+
+int add_element(user * new_user){
+	user * aux = client_list;
+	
+	if(strlen(new_user->username)>=MAX_USERNAME_SIZE){
 		printf("Grande demais!");
 		return 1;
 	}
-	/*if(search_element(begin, username)){
-		//elemento ja esta na lista
-		printf("Elemento ja se encontra na lista\n");
-		return false; //nao foi possivel adicionar elemento na lista
-	}else{*/
-		//elemento nao esta na lista, adicionar
-			//adiciona elemento ao final da lista
-		while(begin->next!=NULL){		
-			begin=begin->next;
-		}
-		strncpy(new_user->username, username, MAX_USERNAME_SIZE);
-		begin->next = new_user;		
-		new_user->next = NULL;
+	printf("Cheguei ao 1\n");
+	
+	
+	if(aux->next==NULL){
+		aux->next = new_user;
+		return 0;
+	}
+	else{
+		printf("Cheguei ao 4\n");
+		aux = aux->next;
+		do{
+			printf("Cheguei ao 5\n");	
+			printf("lista->username=%s\nnew_user->username=%s\n", aux->username, new_user->username);
+			if(strcmp(aux->username, new_user->username)==0){
+				printf("username já utilizado!\n");
+				return 1;
+			}
+			if(aux->next==NULL){
+				aux->next = new_user;
+				return 0;
+			}
+			aux = aux->next;
+		}while(aux!=NULL);	
 		
-			
+		printf("Cheguei ao 7\n");
 		return 0;	//elemento correctamente adicionado
-	//}
+	}
 }
 
 user* remove_element(user* begin, char* username){

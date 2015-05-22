@@ -15,7 +15,7 @@
 #define CHAT_STR "CHAT"// string
 #define QUERY_STR "QUERY"// id_min id_max – request o
 #define MAX_SIZE 1024
-#define PORT 3000
+#define PORT 3001
 
 #define LOGIN_ID 0
 #define DISC_ID 1
