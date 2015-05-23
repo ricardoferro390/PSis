@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "ProtoBuffers.pb-c.h"
-#include "login_list.h"
 
 #define LOGIN_STR "LOGIN"// username 
 #define DISC_STR "DISC"
@@ -16,7 +15,12 @@
 #define QUERY_STR "QUERY"// id_min id_max – request o
 #define QUIT_STR "QUIT"
 #define LOG_STR "LOG"
+#define START_STR "Server Started"
+#define STOP_STR "Server Stoped"
+#define RECUP_STR "Server Recuperated"
+
 #define MAX_SIZE 1024
+
 #define PORT 3000
 
 #define LOGIN_ID 0
@@ -27,6 +31,9 @@
 #define INVALID_ID 5
 #define QUIT_ID 6
 #define LOG_ID 7
+#define START_ID 100
+#define STOP_ID 101
+#define RECUP_ID 102
 
 #define max( a, b) ( ((a) > (b)) ? (a) : (b) )
 

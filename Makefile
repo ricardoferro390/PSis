@@ -1,35 +1,39 @@
-CC = gcc
-PBC = protoc-c
-PBCFLAGS = --c_out=.
-PTHREADS = -lpthread
+CC=gcc
+PBC=protoc-c
+PBCFLAGS =--c_out=.
+PTHREADS=-lpthread
 
-all:
-	$(CC) -c -o login_list.o login_list.c -g
-	$(CC) server.c login_list.c ProtoBuffers.pb-c.c message.c -l protobuf-c -o server $(PTHREADS) -g
-	$(CC) client.c message.c ProtoBuffers.pb-c.c -l protobuf-c -o client -g $(PTHREADS)
-	$(CC) admin.c message.c ProtoBuffers.pb-c.c -l protobuf-c -o admin
+all: server client admin
 	
-ProtoBuffers.pb-c.c:
+ProtoBuffers.pb-c.c: ProtoBuffers.proto
 	$(PBC) $(PBCFLAGS) ProtoBuffers.proto
 
-login_list.o:
-	$(CC) -c -o login_list.o login_list.c
+ProtoBuffers.pb-c.o: ProtoBuffers.pb-c.c
+	$(CC) -c -o ProtoBuffers.pb-c.o ProtoBuffers.pb-c.c
 
-message.o:
-	$(CC) -c -o message.o message.c
+log.o: log.c
+	$(CC) -c -o log.o log.c
 
-log.o: message.h
-	$(CC) -c -o message.o message.c
+message.o: message.c ProtoBuffers.pb-c.o
+	$(CC) -c -o message.o message.c -l protobuf-c
+
+login_list.o: login_list.c ProtoBuffers.pb-c.o message.o login_list.h
+	$(CC) -c -o login_list.o login_list.c -l protobuf-c
+
+server.o: server.c ProtoBuffers.pb-c.o message.o login_list.o log.o
+	$(CC) -c -o server.o server.c -l protobuf-c $(PTHREADS)
  
-server: ProtoBuffers.pb-c.c login_list.o
-	$(CC) server.c login_list.c message.c ProtoBuffers.pb-c.c -l protobuf-c -o server.o $(PTHREADS)
-	$(CC) -c -o server server.o login_list.o $(PTHREADS)
+server: server.o
+	$(CC) $(Wall) -o server server.o message.o login_list.o log.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS)
 
-client: ProtoBuffers.pb-c.c
-	$(CC) client.c message.c ProtoBuffers.pb-c.c -l protobuf-c -o client 
+client.o: client.c ProtoBuffers.pb-c.o message.o
+	$(CC) -c -o client.o client.c -l protobuf-c $(PTHREADS)
 
-admin: ProtoBuffers.pb-c.c
-	$(CC) admin.c message.c ProtoBuffers.pb-c.c -l protobuf-c -o admin
+client: client.o
+	$(CC) $(Wall) -o client client.o message.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS)
 
-proto:
-	$(PBC) $(PBCFLAGS) ProtoBuffers.proto
+admin.o: admin.c ProtoBuffers.pb-c.o message.o
+	$(CC) -c -o admin.o admin.c -l protobuf-c $(PTHREADS)
+
+admin: admin.o
+	$(CC) $(Wall) -o admin admin.o message.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS)

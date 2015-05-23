@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <pthread.h>
-
+#include "ProtoBuffers.pb-c.h"
 #include "message.h"
 
 void send_message(int sock, Message msg){

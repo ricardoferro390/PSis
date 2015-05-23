@@ -1,4 +1,4 @@
-include "log.h"
+#include "message.h"
 
 FILE * log_file;
 pthread_mutex_t log_mutex;
@@ -55,10 +55,7 @@ int append_log_status(int event_id, char * event_extra_string, char * chat_or_qu
 			sprintf(event_str,"QUIT (user:%s)", aditional_str);
 			break;
 		case LOG_ID:
-			sprintf(event_str,"LOG (by admin)", aditional_str, chat_or_query_str);
-			break;
-		case LOG_ID:
-			sprintf(event_str,"LOG (by admin)", aditional_str, chat_or_query_str);
+			strcpy(event_str, "LOG (by admin)");
 			break;
 		case START_ID:
 			strcpy(event_str, START_STR);
@@ -76,7 +73,7 @@ int append_log_status(int event_id, char * event_extra_string, char * chat_or_qu
 	time_str = get_current_time();
 	pthread_mutex_lock(&log_mutex);
 	log_file = fopen("LOG.txt","a");
-	fprintf(log_file,"%s %s",time_str, event_str);
+	fprintf(log_file,"%s %s", event_str, time_str);
 	fclose(log_file);
 	pthread_mutex_unlock(&log_mutex);
 	

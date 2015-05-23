@@ -1,4 +1,6 @@
+#include "ProtoBuffers.pb-c.h"
 #include "message.h"
+#include "login_list.h"
 
 user * client_list;
 pthread_mutex_t mutex;
@@ -78,7 +80,7 @@ int remove_element(user * client){
 
 void destroy_list(user *begin){
 
-	user * aux;
+	/*user * aux;
 	user * aux2;
 
 	//se a lista esta vazia, eliminar o ponteiro inicial
@@ -93,8 +95,8 @@ void destroy_list(user *begin){
 			aux=aux2;
 		}		
 		free(aux);		
-	}
-	
+	}*/
+	pthread_mutex_destroy(&mutex);
 	return;
 }
 
