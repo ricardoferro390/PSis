@@ -15,7 +15,6 @@ struct _list {
 };
 
 void create_list();
-int search_element(user* begin, char* username);
 int add_element(user * new_user);
 int remove_element(user * client);
 void delete_list(user *begin);

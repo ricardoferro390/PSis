@@ -1,3 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <pthread.h>
+
 #include "message.h"
 
 void send_message(int sock, Message msg){
@@ -43,6 +53,9 @@ Message create_message(int type, char* string){
 			break;
 		case QUIT_ID:
 			msg.type = QUIT_ID;
+			break;
+		case LOG_ID:
+			msg.type = LOG_ID;
 			break;
 		default:
 			msg.type = INVALID_ID;

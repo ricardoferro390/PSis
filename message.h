@@ -15,8 +15,9 @@
 #define CHAT_STR "CHAT"// string
 #define QUERY_STR "QUERY"// id_min id_max – request o
 #define QUIT_STR "QUIT"
+#define LOG_STR "LOG"
 #define MAX_SIZE 1024
-#define PORT 3002
+#define PORT 3000
 
 #define LOGIN_ID 0
 #define DISC_ID 1
@@ -25,6 +26,7 @@
 #define OK_ID 4
 #define INVALID_ID 5
 #define QUIT_ID 6
+#define LOG_ID 7
 
 #define max( a, b) ( ((a) > (b)) ? (a) : (b) )
 

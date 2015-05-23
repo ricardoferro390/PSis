@@ -1,6 +1,7 @@
 #include "message.h"
 
 user * client_list;
+pthread_mutex_t mutex;
 
 void create_list(){	
 	client_list = malloc(sizeof(user));
@@ -9,30 +10,24 @@ void create_list(){
 		//exit(1);
 	}
 	client_list->username = NULL;
-	client_list->next = NULL;	//proximo elemento aponto para NULL(fim da lista)
+	client_list->next = NULL;
+	pthread_mutex_init(&mutex, NULL);	//proximo elemento aponto para NULL(fim da lista)
 }
 
-int search_element(user* begin, char* username){
-	printf("cheguei aqui!");
-	
-	if(strcmp(begin->username,username)==0) return 1;
-	while(begin->next!=NULL){
-		if(strcmp(begin->username,username)==0)	return 1;	//elemento ja existente na lista
-		begin = begin->next;
-	}
-	return 0;	//elemento nao encontrado
-}
 
 int add_element(user * new_user){
+	pthread_mutex_lock(&mutex);
 	user * aux = client_list;
 	
 	if(strlen(new_user->username)>=MAX_USERNAME_SIZE){
+		pthread_mutex_unlock(&mutex);
 		printf("Grande demais!");
 		return 1;
 	}
 	
 	if(aux->next==NULL){
 		aux->next = new_user;
+		pthread_mutex_unlock(&mutex);
 		return 0;
 	}
 	else{
@@ -40,23 +35,28 @@ int add_element(user * new_user){
 		do{
 			if(strcmp(aux->username, new_user->username)==0){
 				printf("username já utilizado!\n");
+				pthread_mutex_unlock(&mutex);
 				return 1;
 			}
 			if(aux->next==NULL){
 				aux->next = new_user;
+				pthread_mutex_unlock(&mutex);
 				return 0;
 			}
 			aux = aux->next;
 		}while(aux!=NULL);	
+		pthread_mutex_unlock(&mutex);
 		return 0;	//elemento correctamente adicionado
 	}
 }
 
 int remove_element(user * client){
+	pthread_mutex_lock(&mutex);
 	user * aux = client_list;
 	user * aux_to_remove;
 	
 	if(aux->next==NULL){
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 	
@@ -67,13 +67,16 @@ int remove_element(user * client){
 			printf("Utilizador %s encontrado...\n", client->username);
 			free(aux_to_remove);
 			printf("...e removido!\n");
+			pthread_mutex_unlock(&mutex);
 			return 0;
 		}
 		aux = aux->next;
 	}
+	pthread_mutex_unlock(&mutex);
+	return 1;
 }
 
-void delete_list(user *begin){
+void destroy_list(user *begin){
 
 	user * aux;
 	user * aux2;

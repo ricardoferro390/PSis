@@ -109,19 +109,20 @@ void * client_thread_code(void *arg){
 				// código para query
 				break;
 				
+			///// QUIT //////
 			case QUIT_ID:
 				printf("QUIT received: %s\n", msgRcv->chat);
 				msgSent = create_message(OK_ID, NULL);
 				send_message(client->sock, msgSent);
 				printf("OK enviado\n");
 				break;
+				
 			default:
 				break;
 			}
 	}
 	
 	remove_element(client);
-	fflush(stdout);
 	close(client->sock);
 	printf("Thread fechada\n");
 	pthread_exit(NULL);
@@ -129,6 +130,7 @@ void * client_thread_code(void *arg){
 
 int main(){
 	int exit_flag=0;
+	int admin_conected=0;
 	struct sockaddr_in server_addr, client_addr;
 	int new_sock, sock_fd, admin_sock;
 	user * new_user;
@@ -158,18 +160,37 @@ int main(){
 		exit(-1);
 	}
 	perror("listen ");
-	
-	admin_sock = accept(sock_fd, NULL, NULL);
-	perror("accept");
-	printf("admin just connected\n");
-	
-	
+		
 	while(!exit_flag){
+		if(!admin_conected){
+			admin_sock = accept(sock_fd, NULL, NULL);
+			perror("accept");
+			printf("admin just connected\n");
+			admin_conected = 1;
+		}
 		msgRcv = receive_message(admin_sock);
-		if(msgRcv->type == QUIT_ID) exit_flag = 1;
-		msgSent = create_message(OK_ID, NULL);
-		send_message(admin_sock, msgSent);
-		printf("OK enviado\n");
+		if(msgRcv->type == QUIT_ID){
+			printf("admin QUIT received\n");
+			msgSent = create_message(OK_ID, NULL);
+			send_message(admin_sock, msgSent);
+			printf("OK enviado\n");
+			exit_flag = 1;
+		}
+		if(msgRcv->type == DISC_ID){
+			printf("admin DISC received\n");
+			msgSent = create_message(OK_ID, NULL);
+			send_message(admin_sock, msgSent);
+			close(admin_sock);
+			admin_conected = 0;
+			continue;
+		}
+		if(msgRcv->type == LOG_ID){
+			printf("admin LOG received\n");
+			msgSent = create_message(OK_ID, NULL);
+			send_message(admin_sock, msgSent);
+			printf("OK enviado\n");
+		}
+		
 	}
 	
 	printf("Admin command receiver! Shuting down...\n");
