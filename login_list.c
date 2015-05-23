@@ -1,5 +1,4 @@
-
-#include "login_list.h"
+#include "message.h"
 
 user * client_list;
 
@@ -116,6 +115,23 @@ user * create_user(int sock){
 	new_user->sock = sock;
 	return new_user;
 
+}
+
+void broadcast(char * arg){
+	
+	printf("entrei no broadcast\n");
+	user * aux = client_list;
+	Message msgSent;
+	printf("5\n");
+	msgSent = create_message(CHAT_ID, arg);				
+
+	while(aux!=NULL){
+		if(aux->username!=NULL){
+			send_message(aux->sock, msgSent);
+			printf("A enviar para: %s\tsocket:%d\n", aux->username, aux->sock);
+		}
+		aux = aux->next;
+	}
 }
 	
 

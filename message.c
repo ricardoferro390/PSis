@@ -41,6 +41,9 @@ Message create_message(int type, char* string){
 		case OK_ID:
 			msg.type = OK_ID;
 			break;
+		case QUIT_ID:
+			msg.type = QUIT_ID;
+			break;
 		default:
 			msg.type = INVALID_ID;
 			break;

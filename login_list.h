@@ -3,7 +3,6 @@
 #include <string.h>
 #include <pthread.h>
 
-typedef enum { false, true } bool;
 typedef struct _list user;
 
 #define MAX_USERNAME_SIZE 40
@@ -22,3 +21,4 @@ int remove_element(user * client);
 void delete_list(user *begin);
 void print_list(user* begin);
 user * create_user(int sock);
+void broadcast(char * arg);
