@@ -2,6 +2,7 @@
 
 FILE * log_file;
 pthread_mutex_t log_mutex;
+int log_counter;
 
 /*retirado de
 http://www.cplusplus.com/reference/ctime/localtime/*/
@@ -21,6 +22,7 @@ char * get_current_time(){
 
 void log_ini(){
 	pthread_mutex_init(&log_mutex, NULL);
+	log_counter = 1;
 	return;
 }
 
@@ -69,11 +71,11 @@ int append_log_status(int event_id, char * event_extra_string, char * chat_or_qu
 		default:
 			break;
 	}
-	
 	time_str = get_current_time();
 	pthread_mutex_lock(&log_mutex);
 	log_file = fopen("LOG.txt","a");
-	fprintf(log_file,"%s %s", event_str, time_str);
+	fprintf(log_file,"%d. %s %s", log_counter, event_str, time_str);
+	log_counter++;
 	fclose(log_file);
 	pthread_mutex_unlock(&log_mutex);
 	

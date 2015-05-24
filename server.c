@@ -217,13 +217,15 @@ int main(){
 	pthread_t broadcast_thread_id;
 	pthread_t accepter;
 		
-	append_log_status(START_ID, NULL, NULL);
+	
 	
 	// criação lista de clientes
 	create_list();
 	
 	// inicio do log
 	log_ini();	
+	
+	append_log_status(START_ID, NULL, NULL);
 	
 	// criação de thread para aceitar ligações
 	accepter_exit_flag = 0;
