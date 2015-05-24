@@ -21,16 +21,18 @@
 
 #define MAX_SIZE 1024
 
-#define PORT 3000
+#define PORT 3002
 
 #define LOGIN_ID 0
 #define DISC_ID 1
 #define CHAT_ID 2
 #define QUERY_ID 3
+#define QUERY_RESP_ID 31
 #define OK_ID 4
 #define INVALID_ID 5
 #define QUIT_ID 6
 #define LOG_ID 7
+#define LOG_RESP_ID 71
 #define START_ID 100
 #define STOP_ID 101
 #define RECUP_ID 102

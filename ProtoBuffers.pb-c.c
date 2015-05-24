@@ -50,7 +50,7 @@ void   message__free_unpacked
   assert(message->base.descriptor == &message__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-static const ProtobufCFieldDescriptor message__field_descriptors[3] =
+static const ProtobufCFieldDescriptor message__field_descriptors[7] =
 {
   {
     "type",
@@ -88,16 +88,68 @@ static const ProtobufCFieldDescriptor message__field_descriptors[3] =
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "query_id_min",
+    4,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_INT32,
+    offsetof(Message, has_query_id_min),
+    offsetof(Message, query_id_min),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "query_id_max",
+    5,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_INT32,
+    offsetof(Message, has_query_id_max),
+    offsetof(Message, query_id_max),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "query_resp",
+    6,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Message, query_resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "log_resp",
+    7,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Message, log_resp),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned message__field_indices_by_name[] = {
   2,   /* field[2] = chat */
+  6,   /* field[6] = log_resp */
+  4,   /* field[4] = query_id_max */
+  3,   /* field[3] = query_id_min */
+  5,   /* field[5] = query_resp */
   0,   /* field[0] = type */
   1,   /* field[1] = username */
 };
 static const ProtobufCIntRange message__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 7 }
 };
 const ProtobufCMessageDescriptor message__descriptor =
 {
@@ -107,7 +159,7 @@ const ProtobufCMessageDescriptor message__descriptor =
   "Message",
   "",
   sizeof(Message),
-  3,
+  7,
   message__field_descriptors,
   message__field_indices_by_name,
   1,  message__number_ranges,

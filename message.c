@@ -23,7 +23,8 @@ Message * receive_message(int sock){
 
 Message create_message(int type, char* string){
 	Message msg = MESSAGE__INIT;
-
+	int cmd_int_arg1, cmd_int_arg2;
+	
 	switch(type){
 		case LOGIN_ID:
 			msg.type = LOGIN_ID;
@@ -38,6 +39,11 @@ Message create_message(int type, char* string){
 			break;
 		case QUERY_ID:
 			msg.type = QUERY_ID;
+			sscanf(string, "%*s %d %d", &cmd_int_arg1, &cmd_int_arg2);
+			msg.query_id_min = cmd_int_arg1;
+			msg.has_query_id_min = 1;
+			msg.query_id_max = cmd_int_arg2;
+			msg.has_query_id_max = 1;
 			break;
 		case OK_ID:
 			msg.type = OK_ID;

@@ -29,10 +29,16 @@ struct  _Message
   int32_t type;
   char *username;
   char *chat;
+  protobuf_c_boolean has_query_id_min;
+  int32_t query_id_min;
+  protobuf_c_boolean has_query_id_max;
+  int32_t query_id_max;
+  char *query_resp;
+  char *log_resp;
 };
 #define MESSAGE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&message__descriptor) \
-    , 0, NULL, NULL }
+    , 0, NULL, NULL, 0,0, 0,0, NULL, NULL }
 
 
 /* Message methods */

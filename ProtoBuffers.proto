@@ -2,4 +2,8 @@ message Message{
 	required int32 type = 1;
 	optional string username = 2;
 	optional string chat = 3;
+	optional int32 query_id_min = 4;
+	optional int32 query_id_max = 5;
+	optional string query_resp = 6;
+	optional string log_resp = 7;
 }

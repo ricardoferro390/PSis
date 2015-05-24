@@ -66,9 +66,7 @@ int remove_element(user * client){
 		if(strcmp(aux->next->username, client->username )==0){
 			aux_to_remove = aux->next;
 			aux->next=aux->next->next;
-			printf("Utilizador %s encontrado...\n", client->username);
 			free(aux_to_remove);
-			printf("...e removido!\n");
 			pthread_mutex_unlock(&mutex);
 			return 0;
 		}

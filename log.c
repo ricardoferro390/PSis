@@ -43,7 +43,7 @@ int append_log_status(int event_id, char * event_extra_string, char * chat_or_qu
 			sprintf(event_str,"LOGIN (user:%s)", aditional_str);
 			break;
 		case DISC_ID:
-			sprintf(event_str,"DISConnect (user:%s)", aditional_str);
+			sprintf(event_str,"DISC (user:%s)", aditional_str);
 			break;
 		case CHAT_ID:
 			sprintf(event_str,"CHAT (user:%s) %s", aditional_str, chat_or_query_str);
