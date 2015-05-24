@@ -154,9 +154,9 @@ void admin_command_handler(int sock_fd_admin){
 		if(msgRcv->type == LOG_ID){
 			printf("admin LOG received\n");
 			append_log_status(LOG_ID, NULL, NULL);
-			msgSent = create_message(OK_ID, NULL);
+			msgSent = create_message(LOG_RESP_ID, log_to_string());
 			send_message(admin_sock, msgSent);
-			printf("OK enviado\n");
+			printf("LOG enviado\n");
 		}	
 	}
 	

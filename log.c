@@ -1,5 +1,7 @@
 #include "message.h"
 
+#define LOG_FILENAME "LOG.txt"
+
 FILE * log_file;
 pthread_mutex_t log_mutex;
 int log_counter;
@@ -73,13 +75,31 @@ int append_log_status(int event_id, char * event_extra_string, char * chat_or_qu
 	}
 	time_str = get_current_time();
 	pthread_mutex_lock(&log_mutex);
-	log_file = fopen("LOG.txt","a");
+	log_file = fopen(LOG_FILENAME,"a");
 	fprintf(log_file,"%d. %s %s", log_counter, event_str, time_str);
 	log_counter++;
 	fclose(log_file);
 	pthread_mutex_unlock(&log_mutex);
 	
 	return 0;
+}
+
+char * log_to_string(){
+	char * buffer = 0;
+	long length;
+	log_file = fopen (LOG_FILENAME, "rb");
+
+	if (log_file){
+		fseek (log_file, 0, SEEK_END);
+		length = ftell (log_file);
+		fseek (log_file, 0, SEEK_SET);
+		buffer = malloc (length);
+		if (buffer) fread (buffer, 1, length, log_file);
+
+		fclose (log_file);
+	}
+
+	return buffer;
 }
 
 void destroy_log(){

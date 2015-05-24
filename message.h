@@ -20,7 +20,7 @@
 #define STOP_STR "Server Stoped"
 #define RECUP_STR "Server Recuperated"
 
-#define MAX_SIZE 1024
+#define MAX_SIZE 2000000
 
 #define PORT 3000
 

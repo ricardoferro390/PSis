@@ -32,7 +32,7 @@ void send_message(int sock, Message msg){
 }
 
 Message * receive_message(int sock){
-	char buffer[sizeof(Message)];
+	char buffer[MAX_SIZE];
 	Message * msg;
 	
 	size_t len = read(sock, buffer, sizeof(buffer));
@@ -74,6 +74,10 @@ Message create_message(int type, char* string){
 			break;
 		case LOG_ID:
 			msg.type = LOG_ID;
+			break;
+		case LOG_RESP_ID:
+			msg.type = LOG_RESP_ID;
+			msg.log_resp = string;
 			break;
 		default:
 			msg.type = INVALID_ID;

@@ -2,7 +2,6 @@
 #include "message.h"
 
 int sock;
-char line[100];
 int should_exit;
 
 void admin_ini(){
@@ -33,10 +32,12 @@ void admin_ini(){
 void command_handler(){
 	char command[100];
 	char cmd_str_arg[100];
+	char line[100];
 	int cmd_int_arg1, cmd_int_arg2;
 	Message msgSent;
 	Message * msgRcv;
 	
+	fgets(line, 200, stdin);
 	if(sscanf(line, "%s", command) == 1){
 				
 				///////// LOG admin /////////
@@ -45,7 +46,7 @@ void command_handler(){
 					send_message(sock, msgSent);
 					printf("Sending LOG command\n");
 					msgRcv = receive_message(sock);
-					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
+					if(msgRcv->type==LOG_RESP_ID) printf("%s\n", msgRcv->log_resp);
 				}
 				
 				////////// DISC /////////	
@@ -77,13 +78,12 @@ void command_handler(){
 
 
 int main(int argc, char * argv[]){
-
+	fd_set fd;
 	admin_ini();
 	
 	while(!should_exit){
-		fgets(line, 200, stdin);
-		command_handler();	
-		}
+			command_handler();	
+	}
 	close(sock);
 	printf("Good Bye Chief!\n");
 	exit(0);
