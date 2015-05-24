@@ -5,7 +5,7 @@ PTHREADS=-lpthread
 WALL=
 G=-g
 
-all: server client admin
+all: server client admin relauncher
 	
 ProtoBuffers.pb-c.c: ProtoBuffers.proto
 	$(PBC) $(PBCFLAGS) ProtoBuffers.proto
@@ -39,3 +39,9 @@ admin.o: admin.c ProtoBuffers.pb-c.o message.o
 
 admin: admin.o
 	$(CC) $(WALL) -o admin admin.o message.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)
+
+relauncher.o: relauncher.c
+	$(CC) -c -o relauncher.o relauncher.c $(PTHREADS) $(G)
+
+relauncher: relauncher.o
+	$(CC) $(WALL) -o relauncher relauncher.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)

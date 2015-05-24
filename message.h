@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/stat.h>
 #include "ProtoBuffers.pb-c.h"
 
 #define LOGIN_STR "LOGIN"// username 
@@ -22,7 +24,7 @@
 
 #define MAX_SIZE 2000000
 
-#define PORT 3000
+#define PORT 3002
 
 #define LOGIN_ID 0
 #define DISC_ID 1

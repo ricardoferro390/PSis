@@ -3,11 +3,33 @@
 #include "login_list.h"
 #include "log.h"
 
+#define TICK_TIME 5
+#define TOLERANCE 3
+#define RELAUNCHER "relauncher"
+#define FIFO_NAME "/tmp/AH_AH_AH_AH_STAYIN_ALIVE"
+#define INFINITY 99999999
+
 int client_exit_flag, accepter_exit_flag, stop_broadcast;
 int broadcast_fifo_write;
 int admin_sock, accepter_sock;
 int admin_conected;
 pthread_mutex_t broadcast_mutex;
+pthread_t thread_imAlive, thread_keepRelauncherAlive, thread_isAlive;
+
+int openFIFO_server(int mode){
+	int fd_fifo=-1;
+	
+	if (mode==0){
+		fd_fifo = open(FIFO_NAME, O_RDONLY|O_NONBLOCK);
+	}else if(mode==1){
+		fd_fifo = open(FIFO_NAME, O_WRONLY);
+	}
+	
+	sync();
+	printf("Opened FIFO (Relauncher)\n");
+	
+	return fd_fifo;
+}
 
 int thread_sock_ini(int port){
 	int exit_flag=0;
@@ -209,22 +231,129 @@ void * accepter_thread(void*arg){
 	
 }
 
+void check_fifo(){
+	if(access(FIFO_NAME, F_OK ) == -1 ) {
+		if(mkfifo(FIFO_NAME, 0600) != 0 ){
+			perror("mkfifo ");
+			exit(-1);
+		}
+	}
+}
 
-int main(){
+void * imAlive(void *arg){
+	int fd_fifo;
+	int tick_time = TICK_TIME;
+	int alive = 1;
+	
+	fd_fifo = openFIFO_server(1);
+	while(1){
+		sleep(tick_time);
+		if(write(fd_fifo, &alive, sizeof(alive)) == -1){
+			perror("write");
+			exit(-1);
+		}else{
+			printf("(S)Thread imAlive wrote to FIFO\n");
+		}
+	}
+	
+	pthread_exit(NULL);
+}
+
+int createRelauncher(){
+	int f_ret;
+	f_ret = fork();
+	char * v[1] = {NULL};
+	
+	//Fork
+	if (!f_ret) // IF SON
+		return execve( "relauncher", v , NULL); // Create Process
+	else //PARENT
+		return f_ret;
+}
+
+void * keepRelauncherAlive(void *arg){
+	int status;
+	int pid_proc;
+	
+	printf("Starting relauncher...\n");
+	createRelauncher();
+	while (1){
+		pid_proc = wait(&status);
+		if(WIFSIGNALED(status)){
+			printf("Relauncher parou de excutar PID:(%d) returned with %d code\n", pid_proc, WEXITSTATUS(status));
+			printf("Starting relauncher...\n");
+			createRelauncher();
+		}
+		
+		
+	}
+	pthread_exit(NULL);
+}
+
+void * isAlive(void *arg){
+	int fd_fifo;
+	int tick_time = TICK_TIME;
+	int alive = 1;
+	
+	int tol = TOLERANCE;
+	int r;
+	
+	pthread_t thread_imAlive;
+	pthread_t thread_keepRelauncherAlive;
+	
+	fd_fifo = openFIFO_server(0);
+	while(1){
+		sleep(tick_time);
+		r=read(fd_fifo, &alive, sizeof(alive));
+		if(r == -1 || r == 0){
+			if(r == -1) perror("read");
+			if(tol == 0){
+				printf("Relauncher is dead!\n");
+				break;//Exit from this loop, need to change behaviour of Server
+			}else{
+				printf("Relauncher may be dead, %d attemp(s) left\n", tol);
+				tol--;		
+			}
+		}else{
+			printf("Relauncher is alive\n");
+		}
+	}
+	
+	//close fifo (in reading mode)
+	close(fd_fifo);
+	
+	//Server is now handling relauncher execution
+	pthread_create(&thread_imAlive, NULL, imAlive, NULL);
+	printf("(S) New thread: imAlive\n");
+
+	pthread_create(&thread_keepRelauncherAlive, NULL, keepRelauncherAlive, NULL);
+	printf("(S) New thread: KeepRelauncherAlive\n");
+	
+	sleep(INFINITY);
+	
+	pthread_exit(NULL);
+}
+
+int main(int argc, char *argv[]){
 	int exit_flag=0;
 	int admin_conected=0;
 	int sock_fd_admin;
 	pthread_t broadcast_thread_id;
 	pthread_t accepter;
 		
+	check_fifo();
 	
-	
+	if(argc<2){
+		pthread_create(&thread_imAlive, NULL, imAlive, NULL);		
+		pthread_create(&thread_keepRelauncherAlive, NULL, keepRelauncherAlive, NULL);
+	}else{
+		pthread_create(&thread_isAlive, NULL, isAlive, NULL);
+	}
+		
 	// criação lista de clientes
 	create_list();
-	
 	// inicio do log
 	log_ini();	
-	
 	append_log_status(START_ID, NULL, NULL);
 	
 	// criação de thread para aceitar ligações
