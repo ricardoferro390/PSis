@@ -244,16 +244,17 @@ void * imAlive(void *arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
+	Message msgSent;
 	
 	fd_fifo = openFIFO_server(1);
 	while(1){
 		sleep(tick_time);
-		if(write(fd_fifo, &alive, sizeof(alive)) == -1){
-			perror("write");
+		msgSent = create_message(OK_ID, NULL);
+		if(send_to_fifo(fd_fifo, msgSent) == -1){
+			printf("Error in send_to_FIFO\n");
 			exit(-1);
-		}else{
-			printf("(S)Thread imAlive wrote to FIFO\n");
-		}
+		}else printf("(S)Thread imAlive wrote to FIFO\n");
+
 	}
 	
 	pthread_exit(NULL);
@@ -298,12 +299,10 @@ void * isAlive(void *arg){
 	int tol = TOLERANCE;
 	int r;
 	
-	pthread_t thread_imAlive;
-	pthread_t thread_keepRelauncherAlive;
-	
 	fd_fifo = openFIFO_server(0);
 	while(1){
 		sleep(tick_time);
+		
 		r=read(fd_fifo, &alive, sizeof(alive));
 		if(r == -1 || r == 0){
 			if(r == -1) perror("read");

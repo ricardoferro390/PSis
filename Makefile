@@ -43,5 +43,5 @@ admin: admin.o
 relauncher.o: relauncher.c
 	$(CC) -c -o relauncher.o relauncher.c $(PTHREADS) $(G)
 
-relauncher: relauncher.o
-	$(CC) $(WALL) -o relauncher relauncher.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)
+relauncher: relauncher.o message.o ProtoBuffers.pb-c.o
+	$(CC) $(WALL) -o relauncher relauncher.o message.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)

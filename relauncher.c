@@ -1,3 +1,6 @@
+#include "ProtoBuffers.pb-c.h"
+#include "message.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,11 +37,14 @@ void * imAlive(void* arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
+	Message msgSent;
 	
 	fd_fifo = openFIFO_relauncher(1);
 	while(1){
 		sleep(tick_time);
-		if(write(fd_fifo, &alive, sizeof(alive)) == -1){
+		
+		msgSent = create_message(OK_ID, NULL);
+		if(send_to_fifo(fd_fifo, msgSent) == -1){
 			perror("write");
 			exit(-1);
 		}else{
