@@ -1,20 +1,41 @@
 #include "ProtoBuffers.pb-c.h"
 #include "message.h"
 
+void send_to_fifo(int fifo_fd, Message msg){
+	char * buffer;
+	
+	buffer = malloc(message__get_packed_size(&msg));
+	message__pack(&msg, buffer);
+	if(write(fifo_fd, buffer, message__get_packed_size(&msg))==-1)
+		perror("write");
+}
+
+Message * receive_from_fifo(int fifo_fd){
+	char buffer[sizeof(Message)];
+	Message * msg;
+	
+	size_t len = read(fifo_fd, buffer, sizeof(buffer));
+	if(len==0) return NULL;
+	msg = message__unpack(NULL, len, buffer);
+	
+	return msg;
+}
+
+
 void send_message(int sock, Message msg){
 	char * buffer;
 	
 	buffer = malloc(message__get_packed_size(&msg));
 	message__pack(&msg, buffer);
-	send(sock, buffer, message__get_packed_size(&msg), 0);
-	
+	if(send(sock, buffer, message__get_packed_size(&msg), 0)==-1)
+		perror("send");
 }
 
 Message * receive_message(int sock){
-	char buffer[MAX_SIZE];
+	char buffer[sizeof(Message)];
 	Message * msg;
 	
-	size_t len = read(sock, buffer, MAX_SIZE);
+	size_t len = read(sock, buffer, sizeof(buffer));
 	if(len==0) return NULL;
 	msg = message__unpack(NULL, len, buffer);
 	

@@ -2,7 +2,6 @@
 #include "message.h"
 
 int sock;
-char line[100];
 int login_made;
 int should_exit;
 
@@ -35,10 +34,12 @@ void client_ini(){
 void command_handler(){
 	char command[100];
 	char cmd_str_arg[100];
+	char line[100];
 	int cmd_int_arg1, cmd_int_arg2;
 	Message msgSent;
 	Message * msgRcv;
 	
+	fgets(line, 200, stdin);
 	if(sscanf(line, "%s", command) == 1){
 		
 		////////// LOGIN /////////
@@ -64,7 +65,7 @@ void command_handler(){
 			
 		////////// DISC /////////	
 		}else if(strcmp(command, DISC_STR)==0){
-			msgSent = create_message(DISC_ID, NULL);
+				msgSent = create_message(DISC_ID, NULL);
 				send_message(sock, msgSent);
 				printf("Sending DISconnnect command\n");
 				msgRcv = receive_message(sock);
@@ -106,14 +107,41 @@ void command_handler(){
 	}
 }
 
+void received_message_handler(){
+	Message * msgRcv;
+	
+	msgRcv = receive_message(sock);
+		if(msgRcv==NULL) return;
+		
+	if(msgRcv->type==CHAT_ID){
+		printf("CHAT received: %s\n", msgRcv->chat);
+	}
+	else if(msgRcv->type==QUERY_RESP_ID){
+		
+	}
+	
+	
+}
+
 
 int main(int argc, char * argv[]){
-
+	fd_set fd;
 	client_ini();
 	
 	while(!should_exit){
-		fgets(line, 200, stdin);
-		command_handler();
+		
+		FD_ZERO(&fd);
+		FD_SET(0, &fd);
+		FD_SET(sock, &fd);
+		
+		if(select(sock+1, &fd, NULL, NULL, NULL)==-1)
+			perror("select");
+		
+		if(FD_ISSET(0, &fd))
+			command_handler();
+
+		if(FD_ISSET(sock, &fd))
+			received_message_handler();
 	}
 		
 	close(sock);

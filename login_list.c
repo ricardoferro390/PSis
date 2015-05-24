@@ -3,7 +3,7 @@
 #include "login_list.h"
 
 user * client_list;
-pthread_mutex_t mutex;
+pthread_mutex_t list_mutex;
 
 void create_list(){	
 	client_list = malloc(sizeof(user));
@@ -13,23 +13,23 @@ void create_list(){
 	}
 	client_list->username = NULL;
 	client_list->next = NULL;
-	pthread_mutex_init(&mutex, NULL);	//proximo elemento aponto para NULL(fim da lista)
+	pthread_mutex_init(&list_mutex, NULL);	//proximo elemento aponto para NULL(fim da lista)
 }
 
 
 int add_element(user * new_user){
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&list_mutex);
 	user * aux = client_list;
 	
 	if(strlen(new_user->username)>=MAX_USERNAME_SIZE){
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(&list_mutex);
 		printf("Grande demais!");
 		return 1;
 	}
 	
 	if(aux->next==NULL){
 		aux->next = new_user;
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(&list_mutex);
 		return 0;
 	}
 	else{
@@ -37,42 +37,43 @@ int add_element(user * new_user){
 		do{
 			if(strcmp(aux->username, new_user->username)==0){
 				printf("username já utilizado!\n");
-				pthread_mutex_unlock(&mutex);
+				pthread_mutex_unlock(&list_mutex);
 				return 1;
 			}
 			if(aux->next==NULL){
 				aux->next = new_user;
-				pthread_mutex_unlock(&mutex);
+				pthread_mutex_unlock(&list_mutex);
 				return 0;
 			}
 			aux = aux->next;
 		}while(aux!=NULL);	
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(&list_mutex);
 		return 0;	//elemento correctamente adicionado
 	}
 }
 
 int remove_element(user * client){
-	pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&list_mutex);
 	user * aux = client_list;
 	user * aux_to_remove;
 	
 	if(aux->next==NULL){
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(&list_mutex);
 		return 1;
 	}
 	
 	while(aux->next!=NULL){
-		if(strcmp(aux->next->username, client->username )==0){
-			aux_to_remove = aux->next;
-			aux->next=aux->next->next;
-			free(aux_to_remove);
-			pthread_mutex_unlock(&mutex);
-			return 0;
-		}
+		if(aux->next->username!=NULL && client->username!=NULL)
+			if(strcmp(aux->next->username, client->username )==0){
+				aux_to_remove = aux->next;
+				aux->next=aux->next->next;
+				free(aux_to_remove);
+				pthread_mutex_unlock(&list_mutex);
+				return 0;
+			}
 		aux = aux->next;
 	}
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&list_mutex);
 	return 1;
 }
 
@@ -94,7 +95,7 @@ void destroy_list(user *begin){
 		}		
 		free(aux);		
 	}*/
-	pthread_mutex_destroy(&mutex);
+	pthread_mutex_destroy(&list_mutex);
 	return;
 }
 
@@ -121,13 +122,11 @@ user * create_user(int sock){
 }
 
 void broadcast(char * arg){
-	
 	printf("entrei no broadcast\n");
+	//pthread_mutex_lock(&list_mutex);
 	user * aux = client_list;
 	Message msgSent;
-	printf("5\n");
 	msgSent = create_message(CHAT_ID, arg);				
-
 	while(aux!=NULL){
 		if(aux->username!=NULL){
 			send_message(aux->sock, msgSent);
@@ -135,6 +134,8 @@ void broadcast(char * arg){
 		}
 		aux = aux->next;
 	}
+	pthread_mutex_unlock(&list_mutex);
+	return;
 }
 	
 

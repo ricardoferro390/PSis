@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <fcntl.h>
 #include "ProtoBuffers.pb-c.h"
 
 #define LOGIN_STR "LOGIN"// username 
@@ -21,7 +22,7 @@
 
 #define MAX_SIZE 1024
 
-#define PORT 3002
+#define PORT 3000
 
 #define LOGIN_ID 0
 #define DISC_ID 1
@@ -42,3 +43,5 @@
 void send_message(int sock, Message msg);
 Message * receive_message(int sock);
 Message create_message(int type, char* string);
+void send_to_fifo(int fifo_fd, Message msg);
+Message * receive_from_fifo(int fifo_fd);

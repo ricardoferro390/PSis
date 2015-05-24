@@ -3,9 +3,11 @@
 #include "login_list.h"
 #include "log.h"
 
-int client_exit_flag, accepter_exit_flag;
+int client_exit_flag, accepter_exit_flag, stop_broadcast;
+int broadcast_fifo_write;
 int admin_sock, accepter_sock;
 int admin_conected;
+pthread_mutex_t broadcast_mutex;
 
 int thread_sock_ini(int port){
 	int exit_flag=0;
@@ -41,17 +43,26 @@ int thread_sock_ini(int port){
 }
 
 void * broadcast_thread(void * arg){
-	char * string = (char*)arg;
-	printf("Starting Broadcast\n");
-	broadcast(string);
-	printf("Thread fechada\n");
+	int broadcast_fifo_read;
+	char * buffer = malloc(sizeof(Message));
+	Message * msgRcv; 
+	
+	broadcast_fifo_read = open("/tmp/ToBroadcast", O_RDONLY);
+	
+	while(!stop_broadcast){
+		msgRcv = receive_message(broadcast_fifo_read);
+		printf("Starting Broadcast\n");
+		broadcast(msgRcv->chat);
+		printf("Thread fechada\n");
+	}
+	
 	pthread_exit(NULL);
 }
 
 void client_command_handler(user* client, Message * msgRcv){
 	Message msgSent;
-	pthread_t broadcast_thread_id;
 	char query_limits[MAX_SIZE];
+	char * buffer;
 	
 	switch(msgRcv->type){
 			
@@ -88,8 +99,11 @@ void client_command_handler(user* client, Message * msgRcv){
 				append_log_status(CHAT_ID, client->username, msgRcv->chat);
 				msgSent = create_message(OK_ID, NULL);
 				send_message(client->sock, msgSent);
+				msgSent = create_message(CHAT_ID, msgRcv->chat);
+				pthread_mutex_lock(&broadcast_mutex);
+					send_to_fifo(broadcast_fifo_write, msgSent);
+				pthread_mutex_unlock(&broadcast_mutex);
 				printf("OK enviado\n");
-				//pthread_create(&broadcast_thread_id, NULL, broadcast_thread, msgRcv->chat);
 				break;
 				
 			////// QUERY /////	
@@ -153,11 +167,10 @@ void * client_thread_code(void *arg){
 	user * client = (user*)arg;	
 	Message * msgRcv;
 	
-	
 	client_exit_flag = 0;
 	while(!client_exit_flag){
 		msgRcv = receive_message(client->sock);
-		if(msgRcv==NULL) continue;
+		if(msgRcv==NULL) break;
 		client_command_handler(client, msgRcv);
 		
 	}
@@ -173,6 +186,12 @@ void * accepter_thread(void*arg){
 	int new_sock;
 	int accepter_sock;
 	user * new_user;
+	
+	if(access("/tmp/ToBroadcast", F_OK) == -1)
+		if(mkfifo("/tmp/ToBroadcast", 0600) != 0)
+			perror("broadcast mkfifo");
+			
+	broadcast_fifo_write = open("/tmp/ToBroadcast", O_WRONLY);
 	
 	accepter_sock = thread_sock_ini(PORT);
 	accepter_exit_flag = 0;
@@ -195,9 +214,9 @@ int main(){
 	int exit_flag=0;
 	int admin_conected=0;
 	int sock_fd_admin;
-
-	pthread_t accepter;	
-	
+	pthread_t broadcast_thread_id;
+	pthread_t accepter;
+		
 	append_log_status(START_ID, NULL, NULL);
 	
 	// criação lista de clientes
@@ -206,8 +225,13 @@ int main(){
 	// inicio do log
 	log_ini();	
 	
-	//criação de thread para aceitar ligações
+	// criação de thread para aceitar ligações
+	accepter_exit_flag = 0;
 	pthread_create(&accepter, NULL, accepter_thread, NULL);
+	// criação de thread de broadcast
+	stop_broadcast = 0;
+	pthread_create(&broadcast_thread_id, NULL, broadcast_thread, NULL);
+	
 	
 	// para ligação de admin
 	admin_conected = 0;

@@ -7,3 +7,7 @@ message Message{
 	optional string query_resp = 6;
 	optional string log_resp = 7;
 }
+
+message Heartbeat{
+	required int32 type = 8;
+}
