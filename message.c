@@ -80,6 +80,10 @@ Message create_message(int type, char* string){
 			msg.type = LOG_RESP_ID;
 			msg.log_resp = string;
 			break;
+		case QUERY_RESP_ID:
+			msg.type = QUERY_RESP_ID;
+			msg.query_resp = string;
+			break;
 		default:
 			msg.type = INVALID_ID;
 			break;

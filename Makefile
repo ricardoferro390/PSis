@@ -22,11 +22,14 @@ message.o: message.c ProtoBuffers.pb-c.o message.h
 login_list.o: login_list.c ProtoBuffers.pb-c.o message.o login_list.h
 	$(CC) -c -o login_list.o login_list.c -l protobuf-c $(G)
 
-server.o: server.c ProtoBuffers.pb-c.o message.o login_list.o log.o
+chat_storage.o: chat_storage.c
+	$(CC) -c -o chat_storage.o chat_storage.c $(G)
+
+server.o: server.c ProtoBuffers.pb-c.o message.o login_list.o log.o chat_storage.o
 	$(CC) -c -o server.o server.c -l protobuf-c $(PTHREADS) $(G)
  
 server: server.o
-	$(CC) $(WALL) -o server server.o message.o login_list.o log.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)
+	$(CC) $(WALL) -o server server.o message.o login_list.o log.o chat_storage.o ProtoBuffers.pb-c.o -l protobuf-c $(PTHREADS) $(G)
 
 client.o: client.c ProtoBuffers.pb-c.o message.o
 	$(CC) -c -o client.o client.c -l protobuf-c $(PTHREADS) $(G)

@@ -3,15 +3,17 @@
 #include <string.h>
 #include <stdio.h>
 
+#define MAX_SIZE 2000000
 
 int number_of_messages;
 cs * cs_list;
+pthread_mutex_t chat_mutex;
 
 void cs_init(){	
+	pthread_mutex_init(&chat_mutex, NULL);
 	cs_list = malloc(sizeof(cs));
 	if (cs_list == NULL){ 
 		printf("Nao foi possivel criar lista\n"); 
-		//exit(1);
 	}
 	cs_list->message = NULL;
 	cs_list->id = 0;
@@ -20,56 +22,57 @@ void cs_init(){
 	return;
 }
 
-cs* create_message(char * message){
+cs* create_chat(char * message){
 	cs * new;
 	
 	new = malloc(sizeof(cs));
-	
 	new->message = malloc(MAX_MESSAGE_SIZE*sizeof(char));
 	strcpy(new->message, message);
 	new->id=number_of_messages+1;
 	new->next=NULL;
 	
 	number_of_messages++;
-	
 	return new;
 }
 
 void add_message(char * message){
-	
 	cs * new_message; 
 	cs * aux = cs_list;
-	
+	pthread_mutex_lock(&chat_mutex);
 	if(strlen(message)>=MAX_MESSAGE_SIZE){
 		printf("Mensagem grande demais\n");
+		pthread_mutex_unlock(&chat_mutex);
 		return;
 	}
 	
-	new_message = create_message(message);
+	new_message = create_chat(message);
 	
 	if(aux->next==NULL){
 		aux->next = new_message;
+		pthread_mutex_unlock(&chat_mutex);
 		return;
 	}else{
 		aux = aux->next;
 		do{
 			if(aux->next==NULL){
 				aux->next = new_message;
+				pthread_mutex_unlock(&chat_mutex);
 				return;
 			}
 			aux = aux->next;
 		}while(aux!=NULL);	
+		pthread_mutex_unlock(&chat_mutex);
 		return;
 	}
 }
 
-int query(int a, int b){
-	
+char * query(int a, int b){
 	cs * aux = cs_list;
-	
+	char * buffer = malloc(MAX_SIZE);
+	char * buffer_final = malloc(MAX_SIZE);
+	pthread_mutex_lock(&chat_mutex);
 	if(a>number_of_messages){
 		printf("Nao existem mensagens a comecar com este id_min\n");
-		return 0;
 	}else{
 		//procura um intervalo de mensagens
 		while(aux!=NULL){
@@ -78,48 +81,19 @@ int query(int a, int b){
 			}
 			aux=aux->next;
 		}
-		
 		while(aux!=NULL){
 			if(aux->id<=b){
-				printf("Message %d: %s\n",aux->id, aux->message);
+				sprintf(buffer, "%d: %s\n",aux->id, aux->message);
+				strcat(buffer_final, buffer);
+				//printf("Message %d: %s\n",aux->id, aux->message);
 			}else{
-				return 1;
+				break;
 			}
 			aux=aux->next;
 		}
-		
-	
-	}
-	return 0;
-}
 
-int main(){
-	
-	char * msg1 = "sdfsdfsd";
-	char * msg2 = "aawawawa";
-	char * msg3 = "lolololo";
-	char * msg4 = "utututut";
-	char * msg5 = "ieieieii";
-	
-	cs_init();
-	
-	add_message(msg1);
-	add_message(msg2);
-	add_message(msg3);
-	add_message(msg4);
-	add_message(msg5);
-	
-	printf("Query: 1,3\n");
-	query(1,3);
-	printf("Query: 4,5\n");
-	query(4,5);
-	printf("Query: 2,6\n");
-	query(2,6);
-	printf("Query: 2,2\n");
-	query(2,2);
-	printf("Query: 1,1000\n");
-	query(1,1000);
-	
-	return 0;
+	}
+	pthread_mutex_unlock(&chat_mutex);
+	return buffer_final;
 }
 

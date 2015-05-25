@@ -1,6 +1,7 @@
 #include "ProtoBuffers.pb-c.h"
 #include "message.h"
 #include "login_list.h"
+#include "chat_storage.h"
 #include "log.h"
 #include <sys/time.h>
 
@@ -101,6 +102,7 @@ void client_command_handler(user* client, Message * msgRcv){
 	Message msgSent;
 	char query_limits[MAX_SIZE];
 	char * buffer;
+
 	
 	switch(msgRcv->type){
 			
@@ -135,6 +137,7 @@ void client_command_handler(user* client, Message * msgRcv){
 			case CHAT_ID:
 				printf("Chat received: %s\n", msgRcv->chat);
 				append_log_status(CHAT_ID, client->username, msgRcv->chat);
+				add_message(msgRcv->chat);
 				msgSent = create_message(OK_ID, NULL);
 				send_message(client->sock, msgSent);
 				msgSent = create_message(CHAT_ID, msgRcv->chat);
@@ -148,10 +151,9 @@ void client_command_handler(user* client, Message * msgRcv){
 			case QUERY_ID:
 				printf("Query %d-%d received\n", msgRcv->query_id_min, msgRcv->query_id_max);
 				sprintf(query_limits, "%d-%d", msgRcv->query_id_min, msgRcv->query_id_max);
-				append_log_status(QUERY_ID, client->username, query_limits);				
-				msgSent = create_message(OK_ID, NULL);
+				append_log_status(QUERY_ID, client->username, query_limits);
+				msgSent = create_message(QUERY_RESP_ID, query(msgRcv->query_id_min, msgRcv->query_id_max));	
 				send_message(client->sock, msgSent);
-				printf("OK enviado\n");
 				break;
 				
 			default:
@@ -393,8 +395,9 @@ int main(int argc, char *argv[]){
 		pthread_create(&thread_isAlive, NULL, isAlive, NULL);
 	}
 		
-	// criação lista de clientes
+	// criação lista de clientes e mensagens
 	create_list();
+	cs_init();
 	// inicio do log
 	log_ini();	
 	append_log_status(START_ID, NULL, NULL);

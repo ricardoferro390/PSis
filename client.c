@@ -98,6 +98,8 @@ void command_handler(){
 					msgSent = create_message(QUERY_ID, line);
 					send_message(sock, msgSent);	
 					printf("Sending QUERY command (%d %d)\n", cmd_int_arg1, cmd_int_arg2);
+					msgRcv = receive_message(sock);
+					if(msgRcv->type==QUERY_RESP_ID) printf("%s", msgRcv->query_resp);
 				}
 				else printf("Please LOGIN first\n");
 			}
