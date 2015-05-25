@@ -382,8 +382,10 @@ int main(int argc, char *argv[]){
 	if(argc<2){
 		pthread_create(&thread_imAlive, NULL, imAlive, NULL);		
 		pthread_create(&thread_keepRelauncherAlive, NULL, keepRelauncherAlive, NULL);
+		append_log_status(START_ID, NULL, NULL);
 	}else{
 		pthread_create(&thread_isAlive, NULL, isAlive, NULL);
+		append_log_status(RECUP_ID, NULL, NULL);
 	}
 		
 	// criação lista de clientes e mensagens
@@ -391,7 +393,7 @@ int main(int argc, char *argv[]){
 	cs_init();
 	// inicio do log
 	log_ini();	
-	append_log_status(START_ID, NULL, NULL);
+	
 	
 	// criação de thread para aceitar ligações
 

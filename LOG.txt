@@ -326,3 +326,14 @@
 1. Server Started Mon May 25 16:35:33 2015
 1. Server Started Mon May 25 16:36:58 2015
 1. Server Started Mon May 25 16:37:15 2015
+1. Server Started Mon May 25 16:39:08 2015
+2. LOG (by admin) Mon May 25 16:39:17 2015
+3. DISC (user:admin) Mon May 25 16:39:22 2015
+4. LOGIN (user:a) Mon May 25 16:39:28 2015
+5. CHAT (user:a) a Mon May 25 16:39:31 2015
+6. CHAT (user:a) b Mon May 25 16:39:33 2015
+7. QUERY (user:a) 1-2 Mon May 25 16:39:37 2015
+8. DISC (user:a) Mon May 25 16:39:39 2015
+1. Server Started Mon May 25 16:40:23 2015
+2. QUIT (user:) Mon May 25 16:40:57 2015
+3. Server Stoped Mon May 25 16:40:57 2015

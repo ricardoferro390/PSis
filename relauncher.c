@@ -102,7 +102,6 @@ void * isAlive(void *arg){
 		
 			sleep(tick_time);
 			size_t r = read(fd_fifo, buffer, sizeof(buffer));
-			printf("tol=%d\t end_of_life=%d\t r=%d\n", tol, end_of_life, (int)r);
 			if(r == -1 || r == 0){
 				if(r == -1) perror("read");
 				if(tol == 0){
