@@ -50,49 +50,6 @@ void   message__free_unpacked
   assert(message->base.descriptor == &message__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
-void   heartbeat__init
-                     (Heartbeat         *message)
-{
-  static Heartbeat init_value = HEARTBEAT__INIT;
-  *message = init_value;
-}
-size_t heartbeat__get_packed_size
-                     (const Heartbeat *message)
-{
-  assert(message->base.descriptor == &heartbeat__descriptor);
-  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
-}
-size_t heartbeat__pack
-                     (const Heartbeat *message,
-                      uint8_t       *out)
-{
-  assert(message->base.descriptor == &heartbeat__descriptor);
-  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
-}
-size_t heartbeat__pack_to_buffer
-                     (const Heartbeat *message,
-                      ProtobufCBuffer *buffer)
-{
-  assert(message->base.descriptor == &heartbeat__descriptor);
-  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
-}
-Heartbeat *
-       heartbeat__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data)
-{
-  return (Heartbeat *)
-     protobuf_c_message_unpack (&heartbeat__descriptor,
-                                allocator, len, data);
-}
-void   heartbeat__free_unpacked
-                     (Heartbeat *message,
-                      ProtobufCAllocator *allocator)
-{
-  assert(message->base.descriptor == &heartbeat__descriptor);
-  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
-}
 static const ProtobufCFieldDescriptor message__field_descriptors[7] =
 {
   {
@@ -207,43 +164,5 @@ const ProtobufCMessageDescriptor message__descriptor =
   message__field_indices_by_name,
   1,  message__number_ranges,
   (ProtobufCMessageInit) message__init,
-  NULL,NULL,NULL    /* reserved[123] */
-};
-static const ProtobufCFieldDescriptor heartbeat__field_descriptors[1] =
-{
-  {
-    "type",
-    8,
-    PROTOBUF_C_LABEL_REQUIRED,
-    PROTOBUF_C_TYPE_INT32,
-    0,   /* quantifier_offset */
-    offsetof(Heartbeat, type),
-    NULL,
-    NULL,
-    0,             /* flags */
-    0,NULL,NULL    /* reserved1,reserved2, etc */
-  },
-};
-static const unsigned heartbeat__field_indices_by_name[] = {
-  0,   /* field[0] = type */
-};
-static const ProtobufCIntRange heartbeat__number_ranges[1 + 1] =
-{
-  { 8, 0 },
-  { 0, 1 }
-};
-const ProtobufCMessageDescriptor heartbeat__descriptor =
-{
-  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
-  "Heartbeat",
-  "Heartbeat",
-  "Heartbeat",
-  "",
-  sizeof(Heartbeat),
-  1,
-  heartbeat__field_descriptors,
-  heartbeat__field_indices_by_name,
-  1,  heartbeat__number_ranges,
-  (ProtobufCMessageInit) heartbeat__init,
   NULL,NULL,NULL    /* reserved[123] */
 };

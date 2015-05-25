@@ -2,14 +2,15 @@
 #include "message.h"
 #include "login_list.h"
 #include "log.h"
+#include <sys/time.h>
 
 #define TICK_TIME 5
 #define TOLERANCE 3
 #define RELAUNCHER "relauncher"
 #define FIFO_NAME "/tmp/AH_AH_AH_AH_STAYIN_ALIVE"
 #define INFINITY 99999999
-
-int client_exit_flag, accepter_exit_flag, stop_broadcast;
+int end_of_life;
+int client_exit_flag, stop_broadcast;
 int broadcast_fifo_write;
 int admin_sock, accepter_sock;
 int admin_conected;
@@ -49,8 +50,10 @@ int thread_sock_ini(int port){
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	
 	// bind
-	bind(sock_fd_accepter, (struct sockaddr*)&server_addr, sizeof(server_addr));
-	perror("bind");
+	while(bind(sock_fd_accepter, (struct sockaddr*)&server_addr, sizeof(server_addr))!=0){
+		perror("bind");
+		sleep(10);
+	}
 	
 	// listen
 	if(listen(sock_fd_accepter, 10) == -1){
@@ -68,14 +71,27 @@ void * broadcast_thread(void * arg){
 	int broadcast_fifo_read;
 	char * buffer = malloc(sizeof(Message));
 	Message * msgRcv; 
+	fd_set fd;
+	struct timeval tv;
 	
 	broadcast_fifo_read = open("/tmp/ToBroadcast", O_RDONLY);
 	
-	while(!stop_broadcast){
-		msgRcv = receive_message(broadcast_fifo_read);
-		printf("Starting Broadcast\n");
-		broadcast(msgRcv->chat);
-		printf("Thread fechada\n");
+	while(!end_of_life){
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
+		
+		FD_ZERO(&fd);
+		FD_SET(broadcast_fifo_read, &fd);
+		
+		if(select(broadcast_fifo_read+1, &fd, NULL, NULL, &tv)==-1)
+			perror("select");
+			
+		if(FD_ISSET(broadcast_fifo_read, &fd)){
+			msgRcv = receive_message(broadcast_fifo_read);
+			printf("Starting Broadcast\n");
+			broadcast(msgRcv->chat);
+			printf("Thread fechada\n");
+		}
 	}
 	
 	pthread_exit(NULL);
@@ -148,7 +164,7 @@ void admin_command_handler(int sock_fd_admin){
 	Message * msgRcv;
 	Message msgSent;
 	
-	while(!admin_exit_flag){
+	while(!end_of_life){
 		if(!admin_conected){
 			admin_sock = accept(sock_fd_admin, NULL, NULL);
 			perror("accept");
@@ -162,7 +178,7 @@ void admin_command_handler(int sock_fd_admin){
 			msgSent = create_message(OK_ID, NULL);
 			send_message(admin_sock, msgSent);
 			printf("OK enviado\n");
-			admin_exit_flag = 1;
+			end_of_life = 1;
 		}
 		if(msgRcv->type == DISC_ID){
 			printf("admin DISC received\n");
@@ -208,6 +224,8 @@ void * accepter_thread(void*arg){
 	int new_sock;
 	int accepter_sock;
 	user * new_user;
+	fd_set fd;
+	struct timeval tv;
 	
 	if(access("/tmp/ToBroadcast", F_OK) == -1)
 		if(mkfifo("/tmp/ToBroadcast", 0600) != 0)
@@ -216,15 +234,25 @@ void * accepter_thread(void*arg){
 	broadcast_fifo_write = open("/tmp/ToBroadcast", O_WRONLY);
 	
 	accepter_sock = thread_sock_ini(PORT);
-	accepter_exit_flag = 0;
 	
-	while(!accepter_exit_flag){
-		// accept
-		new_sock = accept(accepter_sock, NULL, NULL);
-		perror("accept");
-		new_user = create_user(new_sock);
-		// criação de uma thread para cada ligação nova
-		pthread_create(&new_user->thread_id, NULL, client_thread_code, new_user);
+	while(!end_of_life){
+		
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
+		
+		FD_ZERO(&fd);
+		FD_SET(accepter_sock, &fd);
+		
+		if(select(accepter_sock+1, &fd, NULL, NULL, &tv)==-1)
+			perror("select");
+		if(FD_ISSET(accepter_sock, &fd)){
+			// accept
+			new_sock = accept(accepter_sock, NULL, NULL);
+			perror("accept");
+			new_user = create_user(new_sock);
+			// criação de uma thread para cada ligação nova
+			pthread_create(&new_user->thread_id, NULL, client_thread_code, new_user);
+		}
 	}	
 	
 	pthread_exit(NULL);
@@ -247,14 +275,19 @@ void * imAlive(void *arg){
 	Message msgSent;
 	
 	fd_fifo = openFIFO_server(1);
-	while(1){
+	while(!end_of_life){
 		sleep(tick_time);
 		msgSent = create_message(OK_ID, NULL);
 		if(send_to_fifo(fd_fifo, msgSent) == -1){
 			printf("Error in send_to_FIFO\n");
 			exit(-1);
 		}else printf("(S)Thread imAlive wrote to FIFO\n");
-
+	}
+	sleep(tick_time);
+	msgSent = create_message(INVALID_ID, NULL);
+	if(send_to_fifo(fd_fifo, msgSent) == -1){
+		printf("Error in send_to_FIFO\n");
+		exit(-1);
 	}
 	
 	pthread_exit(NULL);
@@ -278,15 +311,13 @@ void * keepRelauncherAlive(void *arg){
 	
 	printf("Starting relauncher...\n");
 	createRelauncher();
-	while (1){
+	while (!end_of_life){
 		pid_proc = wait(&status);
 		if(WIFSIGNALED(status)){
 			printf("Relauncher parou de excutar PID:(%d) returned with %d code\n", pid_proc, WEXITSTATUS(status));
 			printf("Starting relauncher...\n");
 			createRelauncher();
 		}
-		
-		
 	}
 	pthread_exit(NULL);
 }
@@ -295,28 +326,41 @@ void * isAlive(void *arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
-	
+	fd_set fd;
+	struct timeval tv;
 	int tol = TOLERANCE;
 	int r;
 	
 	fd_fifo = openFIFO_server(0);
-	while(1){
-		sleep(tick_time);
+	while(!end_of_life){
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
 		
-		r=read(fd_fifo, &alive, sizeof(alive));
-		if(r == -1 || r == 0){
-			if(r == -1) perror("read");
-			if(tol == 0){
-				printf("Relauncher is dead!\n");
-				break;//Exit from this loop, need to change behaviour of Server
+		FD_ZERO(&fd);
+		FD_SET(fd_fifo, &fd);
+		
+		if(select(fd_fifo+1, &fd, NULL, NULL, &tv)==-1)
+			perror("select");
+		if(FD_ISSET(fd_fifo, &fd)){
+			sleep(tick_time);
+			r=read(fd_fifo, &alive, sizeof(alive));
+			if(r == -1 || r == 0){
+				if(r == -1) perror("read");
+				if(tol == 0){
+					printf("Relauncher is dead!\n");
+					break;//Exit from this loop, need to change behaviour of Server
+				}else{
+					printf("Relauncher may be dead, %d attemp(s) left\n", tol);
+					tol--;		
+				}
 			}else{
-				printf("Relauncher may be dead, %d attemp(s) left\n", tol);
-				tol--;		
+				printf("Relauncher is alive\n");
+				tol = TOLERANCE;
 			}
-		}else{
-			printf("Relauncher is alive\n");
+			
 		}
 	}
+	if(end_of_life) pthread_exit(NULL);
 	
 	//close fifo (in reading mode)
 	close(fd_fifo);
@@ -328,7 +372,7 @@ void * isAlive(void *arg){
 	pthread_create(&thread_keepRelauncherAlive, NULL, keepRelauncherAlive, NULL);
 	printf("(S) New thread: KeepRelauncherAlive\n");
 	
-	sleep(INFINITY);
+	while(!end_of_life) sleep(2);
 	
 	pthread_exit(NULL);
 }
@@ -339,7 +383,7 @@ int main(int argc, char *argv[]){
 	int sock_fd_admin;
 	pthread_t broadcast_thread_id;
 	pthread_t accepter;
-		
+	end_of_life = 0;
 	check_fifo();
 	
 	if(argc<2){
@@ -356,7 +400,7 @@ int main(int argc, char *argv[]){
 	append_log_status(START_ID, NULL, NULL);
 	
 	// criação de thread para aceitar ligações
-	accepter_exit_flag = 0;
+
 	pthread_create(&accepter, NULL, accepter_thread, NULL);
 	// criação de thread de broadcast
 	stop_broadcast = 0;
@@ -371,6 +415,14 @@ int main(int argc, char *argv[]){
 	printf("Shuting down!\n");
 	append_log_status(STOP_ID, NULL, NULL);
 	
+	pthread_join(accepter, NULL);
+	pthread_join(broadcast_thread_id, NULL);
+	if(argc<2){
+		pthread_join(thread_imAlive, NULL);
+		pthread_join(thread_keepRelauncherAlive, NULL);
+	}
+	else pthread_join(thread_isAlive, NULL);
+		
 	close(admin_sock);
 	destroy_list();
 	destroy_log();

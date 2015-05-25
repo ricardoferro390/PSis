@@ -16,7 +16,6 @@ PROTOBUF_C__BEGIN_DECLS
 
 
 typedef struct _Message Message;
-typedef struct _Heartbeat Heartbeat;
 
 
 /* --- enums --- */
@@ -42,16 +41,6 @@ struct  _Message
     , 0, NULL, NULL, 0,0, 0,0, NULL, NULL }
 
 
-struct  _Heartbeat
-{
-  ProtobufCMessage base;
-  int32_t type;
-};
-#define HEARTBEAT__INIT \
- { PROTOBUF_C_MESSAGE_INIT (&heartbeat__descriptor) \
-    , 0 }
-
-
 /* Message methods */
 void   message__init
                      (Message         *message);
@@ -71,32 +60,10 @@ Message *
 void   message__free_unpacked
                      (Message *message,
                       ProtobufCAllocator *allocator);
-/* Heartbeat methods */
-void   heartbeat__init
-                     (Heartbeat         *message);
-size_t heartbeat__get_packed_size
-                     (const Heartbeat   *message);
-size_t heartbeat__pack
-                     (const Heartbeat   *message,
-                      uint8_t             *out);
-size_t heartbeat__pack_to_buffer
-                     (const Heartbeat   *message,
-                      ProtobufCBuffer     *buffer);
-Heartbeat *
-       heartbeat__unpack
-                     (ProtobufCAllocator  *allocator,
-                      size_t               len,
-                      const uint8_t       *data);
-void   heartbeat__free_unpacked
-                     (Heartbeat *message,
-                      ProtobufCAllocator *allocator);
 /* --- per-message closures --- */
 
 typedef void (*Message_Closure)
                  (const Message *message,
-                  void *closure_data);
-typedef void (*Heartbeat_Closure)
-                 (const Heartbeat *message,
                   void *closure_data);
 
 /* --- services --- */
@@ -105,7 +72,6 @@ typedef void (*Heartbeat_Closure)
 /* --- descriptors --- */
 
 extern const ProtobufCMessageDescriptor message__descriptor;
-extern const ProtobufCMessageDescriptor heartbeat__descriptor;
 
 PROTOBUF_C__END_DECLS
 

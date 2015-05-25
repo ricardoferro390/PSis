@@ -16,7 +16,8 @@
 #define TOLERANCE 3
 #define SERVER "server"
 #define FIFO_NAME "/tmp/AH_AH_AH_AH_STAYIN_ALIVE"
-#define INFINITY 99999999
+
+int end_of_life;
 
 int openFIFO_relauncher(int mode){
 	int fd_fifo=-1;
@@ -40,9 +41,8 @@ void * imAlive(void* arg){
 	Message msgSent;
 	
 	fd_fifo = openFIFO_relauncher(1);
-	while(1){
+	while(!end_of_life){
 		sleep(tick_time);
-		
 		msgSent = create_message(OK_ID, NULL);
 		if(send_to_fifo(fd_fifo, msgSent) == -1){
 			perror("write");
@@ -73,13 +73,14 @@ void * keepServerAlive(void* arg){
 	
 	printf("Starting server...\n");
 	createServer();
-	while (1){
+	while (!end_of_life){
 		pid_proc = wait(&status);
 		if(WIFSIGNALED(status)){
 			printf("Server stopped PID:(%d) returned with %d code\n", pid_proc, WEXITSTATUS(status));
 			printf("Starting server...\n");
 			createServer();
 		}
+		else end_of_life = 1;
 	}
 	pthread_exit(NULL);
 }
@@ -88,30 +89,51 @@ void * isAlive(void *arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
-	
+	fd_set fd;
+	struct timeval tv;
 	int tol = TOLERANCE;
-	int r;
+	char buffer[MAX_SIZE];
+	Message * msg;
 	
 	pthread_t thread_imAlive;
 	pthread_t thread_keepServerAlive;
 	
 	fd_fifo = openFIFO_relauncher(0);
-	while(1){
-		sleep(tick_time);
-		r=read(fd_fifo, &alive, sizeof(alive));
-		if(r == -1 || r == 0){
-			if(r == -1) perror("read");
-			if(tol == 0){
-				printf("Server is dead!\n");
-				break;//Exit from this loop, need to change behaviour of Relauncher
+	while(!end_of_life){
+		
+		tv.tv_sec = 3;
+		tv.tv_usec = 0;
+		
+		FD_ZERO(&fd);
+		FD_SET(fd_fifo, &fd);
+		
+		if(select(fd_fifo+1, &fd, NULL, NULL, &tv)==-1)
+			perror("select");
+		if(FD_ISSET(fd_fifo, &fd)){
+			sleep(tick_time);
+			size_t r = read(fd_fifo, buffer, sizeof(buffer));
+			printf("tol=%d\t end_of_life=%d\t r=%d\n", tol, end_of_life, (int)r);
+			if(r == -1 || r == 0){
+				if(r == -1) perror("read");
+				if(tol == 0){
+					printf("Server is dead!\n");
+					break;//Exit from this loop, need to change behaviour of Relauncher
+				}else{
+					printf("Server may be dead, %d attemp(s) left\n", tol);
+					tol--;		
+				}
 			}else{
-				printf("Server may be dead, %d attemp(s) left\n", tol);
-				tol--;		
+				msg = message__unpack(NULL, r, buffer);
+				if(msg->type==INVALID_ID) {
+					printf("Server received INVALID_ID\n");
+					end_of_life = 1;
+				}
+				printf("Server is alive\n");
+				tol = TOLERANCE;
 			}
-		}else{
-			printf("Server is alive\n");
 		}
 	}
+	if(end_of_life) pthread_exit(NULL);
 	
 	//close fifo (in reading mode)
 	close(fd_fifo);
@@ -123,7 +145,10 @@ void * isAlive(void *arg){
 	pthread_create(&thread_keepServerAlive, NULL, keepServerAlive, NULL);
 	printf("(R) New thread: KeepServerAlive\n");
 	
-	sleep(INFINITY);
+	while(!end_of_life) sleep(2);
+	
+	pthread_join(thread_imAlive, NULL);
+	pthread_join(thread_keepServerAlive, NULL);
 	
 	pthread_exit(NULL);
 }
@@ -132,6 +157,7 @@ void * isAlive(void *arg){
 int main(int argc, char **argv)
 {
 	pthread_t thread_isAlive;
+	end_of_life = 0;
 	
 	if( access(FIFO_NAME, F_OK ) == -1 ) {
 		if (mkfifo(FIFO_NAME, 0600) != 0 ){
@@ -145,8 +171,10 @@ int main(int argc, char **argv)
 	pthread_create(&thread_isAlive, NULL, isAlive, NULL);
 	printf("(R) New thread - Thread isAlive\n");
 	
-	sleep(INFINITY);
+	while(!end_of_life) sleep(2);
 	
-	return 0;
+	pthread_join(thread_isAlive, NULL);
+	
+	exit(0);
 }
 

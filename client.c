@@ -107,11 +107,11 @@ void command_handler(){
 	}
 }
 
-void received_message_handler(){
+int received_message_handler(){
 	Message * msgRcv;
 	
 	msgRcv = receive_message(sock);
-		if(msgRcv==NULL) return;
+		if(msgRcv==NULL) return 1;
 		
 	if(msgRcv->type==CHAT_ID){
 		printf("CHAT received: %s\n", msgRcv->chat);
@@ -119,7 +119,7 @@ void received_message_handler(){
 	else if(msgRcv->type==QUERY_RESP_ID){
 		
 	}
-	
+	return 0;
 	
 }
 
@@ -129,7 +129,7 @@ int main(int argc, char * argv[]){
 	client_ini();
 	
 	while(!should_exit){
-		
+
 		FD_ZERO(&fd);
 		FD_SET(0, &fd);
 		FD_SET(sock, &fd);
@@ -141,7 +141,7 @@ int main(int argc, char * argv[]){
 			command_handler();
 
 		if(FD_ISSET(sock, &fd))
-			received_message_handler();
+			if(received_message_handler()==1) break;
 	}
 		
 	close(sock);

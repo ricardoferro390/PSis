@@ -29,7 +29,7 @@ void admin_ini(){
 
 }
 
-void command_handler(){
+int command_handler(){
 	char command[100];
 	char cmd_str_arg[100];
 	char line[100];
@@ -46,6 +46,7 @@ void command_handler(){
 					send_message(sock, msgSent);
 					printf("Sending LOG command\n");
 					msgRcv = receive_message(sock);
+					if(msgRcv==NULL) return 1;
 					if(msgRcv->type==LOG_RESP_ID) printf("%s\n", msgRcv->log_resp);
 				}
 				
@@ -55,7 +56,7 @@ void command_handler(){
 					send_message(sock, msgSent);
 					printf("Sending DISconnnect command\n");
 					msgRcv = receive_message(sock);
-					//printf("recebi\n");
+					if(msgRcv==NULL) return 1;
 					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
 					if(msgRcv->type==OK_ID){
 						should_exit = 1;
@@ -68,12 +69,14 @@ void command_handler(){
 					send_message(sock, msgSent);
 					printf("Sending QUIT command\n");
 					msgRcv = receive_message(sock);
+					if(msgRcv==NULL) return 1;
 					if(msgRcv->type==OK_ID) printf("Received OK %d\n", msgRcv->type);
 					if(msgRcv->type==OK_ID){
 						should_exit = 1;
 					}
 				}
 			}
+			return 0;
 }
 
 
@@ -82,7 +85,7 @@ int main(int argc, char * argv[]){
 	admin_ini();
 	
 	while(!should_exit){
-			command_handler();	
+			if(command_handler()==1) break;	
 	}
 	close(sock);
 	printf("Good Bye Chief!\n");

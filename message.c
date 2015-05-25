@@ -1,13 +1,14 @@
 #include "ProtoBuffers.pb-c.h"
 #include "message.h"
 
-void send_to_fifo(int fifo_fd, Message msg){
+int send_to_fifo(int fifo_fd, Message msg){
 	char * buffer;
 	
 	buffer = malloc(message__get_packed_size(&msg));
 	message__pack(&msg, buffer);
 	if(write(fifo_fd, buffer, message__get_packed_size(&msg))==-1)
 		perror("write");
+	return 0;
 }
 
 Message * receive_from_fifo(int fifo_fd){
