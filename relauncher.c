@@ -89,8 +89,7 @@ void * isAlive(void *arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
-	fd_set fd;
-	struct timeval tv;
+	
 	int tol = TOLERANCE;
 	char buffer[MAX_SIZE];
 	Message * msg;
@@ -101,15 +100,6 @@ void * isAlive(void *arg){
 	fd_fifo = openFIFO_relauncher(0);
 	while(!end_of_life){
 		
-		tv.tv_sec = 3;
-		tv.tv_usec = 0;
-		
-		FD_ZERO(&fd);
-		FD_SET(fd_fifo, &fd);
-		
-		if(select(fd_fifo+1, &fd, NULL, NULL, &tv)==-1)
-			perror("select");
-		if(FD_ISSET(fd_fifo, &fd)){
 			sleep(tick_time);
 			size_t r = read(fd_fifo, buffer, sizeof(buffer));
 			printf("tol=%d\t end_of_life=%d\t r=%d\n", tol, end_of_life, (int)r);
@@ -131,7 +121,7 @@ void * isAlive(void *arg){
 				printf("Server is alive\n");
 				tol = TOLERANCE;
 			}
-		}
+		
 	}
 	if(end_of_life) pthread_exit(NULL);
 	

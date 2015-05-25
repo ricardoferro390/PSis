@@ -24,7 +24,7 @@
 
 #define MAX_SIZE 2000000
 
-#define PORT 3000
+#define PORT 3002
 
 #define LOGIN_ID 0
 #define DISC_ID 1

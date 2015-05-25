@@ -320,6 +320,7 @@ void * keepRelauncherAlive(void *arg){
 			printf("Starting relauncher...\n");
 			createRelauncher();
 		}
+		else end_of_life = 1;
 	}
 	pthread_exit(NULL);
 }
@@ -328,22 +329,12 @@ void * isAlive(void *arg){
 	int fd_fifo;
 	int tick_time = TICK_TIME;
 	int alive = 1;
-	fd_set fd;
-	struct timeval tv;
 	int tol = TOLERANCE;
 	int r;
 	
 	fd_fifo = openFIFO_server(0);
 	while(!end_of_life){
-		tv.tv_sec = 3;
-		tv.tv_usec = 0;
 		
-		FD_ZERO(&fd);
-		FD_SET(fd_fifo, &fd);
-		
-		if(select(fd_fifo+1, &fd, NULL, NULL, &tv)==-1)
-			perror("select");
-		if(FD_ISSET(fd_fifo, &fd)){
 			sleep(tick_time);
 			r=read(fd_fifo, &alive, sizeof(alive));
 			if(r == -1 || r == 0){
@@ -360,7 +351,7 @@ void * isAlive(void *arg){
 				tol = TOLERANCE;
 			}
 			
-		}
+		
 	}
 	if(end_of_life) pthread_exit(NULL);
 	
